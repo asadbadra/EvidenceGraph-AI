@@ -1,0 +1,20 @@
+# Secrets / environment
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Local database and generated artifacts
+*.db
+*.sqlite3
+data/*.db
+runs/
+htmlcov/
+.pytest_cache/
+.coverage
