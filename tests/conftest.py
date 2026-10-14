@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import socket
 from pathlib import Path
 
 import pytest
@@ -11,6 +12,26 @@ from app.db import init_db, make_engine, make_session_factory
 from app.ingestion.loader import load_advisories
 
 FIXTURE = Path(__file__).resolve().parent.parent / "data" / "sample" / "advisories.json"
+
+
+@pytest.fixture(autouse=True)
+def _block_real_network(monkeypatch: pytest.MonkeyPatch):
+    """Fail loudly if any test tries to open a real socket.
+
+    The whole suite must run offline and deterministically (research
+    reproducibility). Tests that need HTTP inject `httpx.MockTransport`;
+    anything else that reaches for the network is a bug, not a flake.
+    """
+
+    def _blocked(*args, **kwargs):
+        raise RuntimeError(
+            "Real network access is blocked in tests. Use httpx.MockTransport "
+            "(see tests/test_fetchers.py) instead of a live endpoint."
+        )
+
+    monkeypatch.setattr(socket.socket, "connect", _blocked)
+    monkeypatch.setattr(socket, "create_connection", _blocked)
+    monkeypatch.setattr(socket, "getaddrinfo", _blocked)
 
 
 @pytest.fixture()

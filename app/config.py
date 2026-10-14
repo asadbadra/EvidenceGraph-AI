@@ -42,6 +42,22 @@ class Settings(BaseSettings):
     chunk_max_chars: int = 900
     chunk_overlap_chars: int = 150
 
+    # Fetching public feeds (Phase 1, Step 3)
+    http_timeout_seconds: float = 30.0
+    http_max_retries: int = 3  # extra attempts after the first one
+    http_backoff_base_seconds: float = 1.0  # 1s, 2s, 4s ... exponential
+    http_backoff_max_seconds: float = 30.0
+    http_max_retry_after_seconds: float = 60.0  # bound on server Retry-After
+    kev_feed_url: str = (
+        "https://www.cisa.gov/sites/default/files/feeds/"
+        "known_exploited_vulnerabilities.json"
+    )
+    nvd_api_url: str = "https://services.nvd.nist.gov/rest/json/cves/2.0"
+    nvd_api_key: str = Field(default="", repr=False)  # optional, never printed
+    # None = pick automatically (6s without a key, 1s with one); NVD's public
+    # limit is 5 req/30s unkeyed, 50 req/30s keyed.
+    nvd_min_request_interval_seconds: float | None = None
+
 
 @lru_cache
 def get_settings() -> Settings:

@@ -14,7 +14,6 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
-from datetime import datetime, timezone
 from pathlib import Path
 
 from sqlalchemy import delete, select
@@ -106,9 +105,10 @@ def load_advisories(
     for record in records:
         if any(not str(record.get(field, "")).strip() for field in REQUIRED_FIELDS):
             continue
-        published = str(record.get("dateAdded", "")) or datetime.now(
-            timezone.utc
-        ).date().isoformat()
+        # Verbatim from the source. An empty/missing dateAdded stays empty:
+        # substituting today's date would invent provenance, and every claim
+        # downstream must be traceable to what the source actually said.
+        published = str(record.get("dateAdded", "")).strip()
         document = Document(
             source_id=source.id,
             external_id=record["cveID"],

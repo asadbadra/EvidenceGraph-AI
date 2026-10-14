@@ -1,0 +1,212 @@
+{
+  "version": "pilot-v1",
+  "description": "Small hand-labelled pilot set for EvidenceGraph AI. 6 categories x 4 questions, grounded ONLY in the committed fixtures (data/sample/advisories.json, 5 CISA KEV records; data/sample/nvd_sample.json, 1 NVD record for CVE-2021-44228).",
+  "scope_note": "This is a PILOT, not a benchmark. 24 questions over a 6-record corpus cannot support generalizable claims. It is sized to exercise every evaluation category end to end and to make the harness and metrics runnable and reproducible.",
+  "label_vocabulary": ["supported", "contradicted", "insufficient_evidence", "unverifiable"],
+  "questions": [
+    {
+      "id": "direct-01",
+      "category": "directly_answerable",
+      "question": "Which product does CVE-2018-13379 affect?",
+      "gold_claims": [
+        {"text": "CVE-2018-13379 affects Fortinet FortiOS.", "gold_label": "supported"}
+      ]
+    },
+    {
+      "id": "direct-02",
+      "category": "directly_answerable",
+      "question": "What type of vulnerability is CVE-2023-34362?",
+      "gold_claims": [
+        {"text": "CVE-2023-34362 is a SQL injection vulnerability.", "gold_label": "supported"}
+      ]
+    },
+    {
+      "id": "direct-03",
+      "category": "directly_answerable",
+      "question": "On what date was CVE-2021-44228 added to the catalog?",
+      "gold_claims": [
+        {"text": "CVE-2021-44228 was added on 2021-12-10.", "gold_label": "supported"}
+      ]
+    },
+    {
+      "id": "direct-04",
+      "category": "directly_answerable",
+      "question": "What weakness class is associated with CVE-2014-0160?",
+      "gold_claims": [
+        {"text": "CVE-2014-0160 is an information disclosure weakness in OpenSSL.", "gold_label": "supported"}
+      ]
+    },
+    {
+      "id": "hop-01",
+      "category": "multi_hop",
+      "question": "Which cataloged vulnerabilities were added on 2021-11-03?",
+      "gold_claims": [
+        {"text": "CVE-2018-13379 was added on 2021-11-03.", "gold_label": "supported"},
+        {"text": "CVE-2021-34473 was added on 2021-11-03.", "gold_label": "supported"}
+      ]
+    },
+    {
+      "id": "hop-02",
+      "category": "multi_hop",
+      "question": "Which cataloged products are affected by remote code execution vulnerabilities?",
+      "gold_claims": [
+        {"text": "Apache Log4j2 is affected by a remote code execution vulnerability.", "gold_label": "supported"},
+        {"text": "Microsoft Exchange Server is affected by a remote code execution vulnerability.", "gold_label": "supported"},
+        {"text": "Fortinet FortiOS is affected by a remote code execution vulnerability.", "gold_label": "insufficient_evidence"}
+      ]
+    },
+    {
+      "id": "hop-03",
+      "category": "multi_hop",
+      "question": "Which cataloged vulnerabilities are flagged as known ransomware campaign use and were added in 2021?",
+      "gold_claims": [
+        {"text": "CVE-2021-44228 has known ransomware campaign use.", "gold_label": "supported"},
+        {"text": "CVE-2018-13379 has known ransomware campaign use.", "gold_label": "supported"},
+        {"text": "CVE-2021-34473 has known ransomware campaign use.", "gold_label": "supported"},
+        {"text": "CVE-2014-0160 has known ransomware campaign use.", "gold_label": "contradicted"}
+      ]
+    },
+    {
+      "id": "hop-04",
+      "category": "multi_hop",
+      "question": "Do FortiOS CVE-2018-13379 and Exchange CVE-2021-34473 share the same vulnerability class?",
+      "gold_claims": [
+        {"text": "CVE-2018-13379 is a path traversal vulnerability.", "gold_label": "supported"},
+        {"text": "CVE-2021-34473 is a remote code execution vulnerability.", "gold_label": "supported"},
+        {"text": "Both vulnerabilities are the same class.", "gold_label": "contradicted"}
+      ]
+    },
+    {
+      "id": "absent-01",
+      "category": "not_in_corpus",
+      "question": "What is the CVSS base score of CVE-2021-44228?",
+      "gold_claims": [
+        {"text": "The CVSS base score of CVE-2021-44228 is 10.0.", "gold_label": "insufficient_evidence"}
+      ]
+    },
+    {
+      "id": "absent-02",
+      "category": "not_in_corpus",
+      "question": "How many endpoints were compromised by the MOVEit Transfer exploit?",
+      "gold_claims": [
+        {"text": "The MOVEit Transfer exploit compromised 2500 endpoints.", "gold_label": "insufficient_evidence"}
+      ]
+    },
+    {
+      "id": "absent-03",
+      "category": "not_in_corpus",
+      "question": "Which CISA advisory identifier corresponds to the FortiOS path traversal issue?",
+      "gold_claims": [
+        {"text": "The FortiOS path traversal issue has CISA advisory AA21-312G.", "gold_label": "insufficient_evidence"}
+      ]
+    },
+    {
+      "id": "absent-04",
+      "category": "not_in_corpus",
+      "question": "What patch KB article number did Microsoft publish for CVE-2021-34473?",
+      "gold_claims": [
+        {"text": "Microsoft published KB5004236 for CVE-2021-34473.", "gold_label": "insufficient_evidence"}
+      ]
+    },
+    {
+      "id": "plausible-01",
+      "category": "plausible_but_absent",
+      "question": "Was CVE-2018-13379 exploited by the Conti ransomware group?",
+      "gold_claims": [
+        {"text": "The Conti ransomware group exploited CVE-2018-13379.", "gold_label": "insufficient_evidence"}
+      ]
+    },
+    {
+      "id": "plausible-02",
+      "category": "plausible_but_absent",
+      "question": "Did OpenSSL release a 1.0.2g hotfix for the Heartbleed issue?",
+      "gold_claims": [
+        {"text": "OpenSSL released a 1.0.2g hotfix for CVE-2014-0160.", "gold_label": "insufficient_evidence"}
+      ]
+    },
+    {
+      "id": "plausible-03",
+      "category": "plausible_but_absent",
+      "question": "Is there a Cisco product listed in this catalog?",
+      "gold_claims": [
+        {"text": "A Cisco product is listed in the catalog.", "gold_label": "contradicted"}
+      ]
+    },
+    {
+      "id": "plausible-04",
+      "category": "plausible_but_absent",
+      "question": "Is CVE-2021-45046 present in this catalog?",
+      "gold_claims": [
+        {"text": "CVE-2021-45046 is present in the catalog.", "gold_label": "contradicted"}
+      ]
+    },
+    {
+      "id": "wrong-01",
+      "category": "contradiction_misattribution",
+      "question": "CVE-2014-0160 is a SQL injection flaw in Progress MOVEit Transfer. True or false?",
+      "gold_claims": [
+        {"text": "CVE-2014-0160 is a SQL injection flaw in Progress MOVEit Transfer.", "gold_label": "contradicted"},
+        {"text": "CVE-2014-0160 is an information disclosure flaw in OpenSSL.", "gold_label": "supported"}
+      ]
+    },
+    {
+      "id": "wrong-02",
+      "category": "contradiction_misattribution",
+      "question": "Fortinet FortiOS CVE-2018-13379 allows remote code execution via JNDI lookups. True or false?",
+      "gold_claims": [
+        {"text": "CVE-2018-13379 allows remote code execution via JNDI lookups.", "gold_label": "contradicted"},
+        {"text": "CVE-2018-13379 is a path traversal vulnerability in the SSL VPN web portal.", "gold_label": "supported"}
+      ]
+    },
+    {
+      "id": "wrong-03",
+      "category": "contradiction_misattribution",
+      "question": "Microsoft Exchange CVE-2021-34473 is a path traversal vulnerability. True or false?",
+      "gold_claims": [
+        {"text": "CVE-2021-34473 is a path traversal vulnerability.", "gold_label": "contradicted"},
+        {"text": "CVE-2021-34473 is a remote code execution vulnerability in Exchange Server.", "gold_label": "supported"}
+      ]
+    },
+    {
+      "id": "wrong-04",
+      "category": "contradiction_misattribution",
+      "question": "CVE-2023-34362 affects Apache Log4j2. True or false?",
+      "gold_claims": [
+        {"text": "CVE-2023-34362 affects Apache Log4j2.", "gold_label": "contradicted"},
+        {"text": "CVE-2023-34362 affects Progress MOVEit Transfer.", "gold_label": "supported"}
+      ]
+    },
+    {
+      "id": "opinion-01",
+      "category": "non_factual",
+      "question": "Is Log4Shell the most serious vulnerability ever disclosed?",
+      "gold_claims": [
+        {"text": "Log4Shell is the most serious vulnerability ever disclosed.", "gold_label": "unverifiable"}
+      ]
+    },
+    {
+      "id": "opinion-02",
+      "category": "non_factual",
+      "question": "Should organizations prioritize MOVEit remediation over Log4j remediation?",
+      "gold_claims": [
+        {"text": "Organizations should prioritize MOVEit remediation over Log4j remediation.", "gold_label": "unverifiable"}
+      ]
+    },
+    {
+      "id": "opinion-03",
+      "category": "non_factual",
+      "question": "Is it reasonable to consider Heartbleed overhyped?",
+      "gold_claims": [
+        {"text": "Heartbleed was overhyped.", "gold_label": "unverifiable"}
+      ]
+    },
+    {
+      "id": "opinion-04",
+      "category": "non_factual",
+      "question": "Which catalog entry is most likely to be exploited in the future?",
+      "gold_claims": [
+        {"text": "A specific catalog entry is most likely to be exploited in the future.", "gold_label": "unverifiable"}
+      ]
+    }
+  ]
+}
