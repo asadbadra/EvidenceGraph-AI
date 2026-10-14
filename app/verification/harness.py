@@ -258,14 +258,26 @@ def citation_quality_for_run(session: Session, eval_run_id: int) -> dict[str, Ci
         .filter(EvalResult.eval_run_id == eval_run_id)
         .all()
     )
-    out: dict[str, CitationQuality] = {}
+    # A run holds one EvalResult per system per question, so the counts are
+    # SUMMED across every question row of each system. An earlier version
+    # assigned (out[row.system] = ...), which kept only the last row and
+    # silently dropped the earlier questions' citations and invalid markers
+    # on multi-question runs. The metric definitions are unchanged --
+    # `invalid_marker_rate` is still invalid markers over all marker-bearing
+    # citations, now correctly across the whole run.
+    totals: dict[str, list[int]] = {}
     for row in rows:
-        out[row.system] = citation_quality(
-            citations=row.citation_count,
-            invalid_markers=row.invalid_marker_count,
+        acc = totals.setdefault(row.system, [0, 0])
+        acc[0] += row.citation_count
+        acc[1] += row.invalid_marker_count
+    return {
+        system: citation_quality(
+            citations=citations,
+            invalid_markers=invalid,
             verified_citations=None,
         )
-    return out
+        for system, (citations, invalid) in totals.items()
+    }
 
 
 def judge_agreement_for_run(

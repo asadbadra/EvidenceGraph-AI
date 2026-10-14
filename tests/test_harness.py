@@ -516,6 +516,61 @@ def test_citation_quality_is_empty_for_an_unknown_run(db_session: Session) -> No
     assert citation_quality_for_run(db_session, 999999) == {}
 
 
+def test_citation_quality_aggregates_counts_across_questions(db_session: Session) -> None:
+    """Regression: a multi-question run must SUM counts, not keep the last row.
+
+    The live 2-question mini pilot exposed this: a run holds one row per
+    system per question, and the helper reported only the final question's
+    counts (2) while the run held 5 valid citations.
+    """
+    chunks = [_chunk(101), _chunk(202)]
+    one_marker = "Apache Log4j2 allows remote code execution [1]."
+    two_markers = "Apache Log4j2 allows remote code execution [1]. FortiOS has traversal [2]."
+    outcome = run_ab_eval(
+        db_session,
+        _questions("Q1?", "Q2?"),
+        baseline_llm=ScriptedLLM([one_marker, two_markers], model="m"),
+        verified_llm=ScriptedLLM([one_marker, two_markers], model="m"),
+        retriever_factory=_factory(chunks),
+        judge=RuleBasedJudge(),
+    )
+    from app.verification.harness import citation_quality_for_run
+
+    quality = citation_quality_for_run(db_session, outcome.eval_run_id)
+    for system in (SYSTEM_BASELINE, SYSTEM_VERIFIED):
+        assert quality[system].citations == 3, f"{system}: 1 + 2 markers, not the last row's 2"
+        assert quality[system].invalid_markers == 0
+
+
+def test_citation_quality_keeps_invalid_markers_from_earlier_questions(
+    db_session: Session,
+) -> None:
+    """Regression: an invalid marker on an EARLIER question must not vanish.
+
+    Pre-fix, the last row overwrote the system's counts, silently losing an
+    invalid marker stored on a previous question -- understating the exact
+    problem the metric exists to surface.
+    """
+    chunks = [_chunk(101), _chunk(202)]
+    bad = "Apache Log4j2 allows remote code execution [9]."  # no retrieved chunk 9
+    good = "Apache Log4j2 allows remote code execution [1]."
+    outcome = run_ab_eval(
+        db_session,
+        _questions("Q-bad?", "Q-good?"),
+        baseline_llm=ScriptedLLM([bad, good], model="m"),
+        verified_llm=ScriptedLLM([bad, good], model="m"),
+        retriever_factory=_factory(chunks),
+        judge=RuleBasedJudge(),
+    )
+    from app.verification.harness import citation_quality_for_run
+
+    quality = citation_quality_for_run(db_session, outcome.eval_run_id)
+    for system in (SYSTEM_BASELINE, SYSTEM_VERIFIED):
+        assert quality[system].invalid_markers == 1, system
+        assert quality[system].citations == 1, system  # only [1] is valid
+        assert quality[system].invalid_marker_rate == 0.5
+
+
 def test_agreement_and_citation_quality_survive_a_multi_claim_run(db_session: Session) -> None:
     """Two claims, one matching gold and one not: coverage is 0.5."""
     answer = "Log4j2 allows RCE [1]. FortiOS has traversal [2]."
