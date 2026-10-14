@@ -459,3 +459,168 @@ def _verify_args(question: str, judge: str = "rules"):
     from app.cli import build_parser
 
     return build_parser().parse_args(["verify", question, "--judge", judge])
+
+
+# --------------------------------------------------------------------------
+# CLI: provider-reported usage exposure (Stage 2.9 wiring of Stage 2.8)
+# --------------------------------------------------------------------------
+#
+# Offline: `httpx.post` is monkeypatched, exactly as in tests/test_usage.py,
+# because the LLM client has no transport injection point. The canned
+# responses imitate an OpenAI-compatible server (e.g. local Ollama) without
+# any network access -- the autouse network guard would fail loudly otherwise.
+
+FAKE_KEY = "unit-test-key-not-a-secret"
+CANNED_ANSWER = "Progress MOVEit Transfer has a SQL injection vulnerability [1]."
+
+
+@pytest.fixture()
+def settings_with_corpus_real_llm(tmp_path: Path) -> Settings:
+    """Corpus ingested, provider set to a real (never-called) endpoint."""
+    from tests.conftest import FIXTURE
+
+    from app.db import init_db, make_engine, make_session_factory
+    from app.ingestion.loader import load_advisories
+
+    settings = Settings(
+        database_url=f"sqlite:///{tmp_path / 'cli-usage.db'}",
+        llm_provider="openai",
+        llm_base_url="http://localhost:11434/v1",
+        llm_api_key=FAKE_KEY,
+        llm_model="test-model",
+        llm_timeout_seconds=5.0,
+    )
+    engine = make_engine(settings.database_url)
+    init_db(engine)
+    session = make_session_factory(engine)()
+    load_advisories(session, FIXTURE)
+    session.commit()
+    session.close()
+    return settings
+
+
+def _completion_response(content: str, usage: dict | None = None):
+    import httpx
+
+    payload = {"choices": [{"message": {"content": content}}]}
+    if usage is not None:
+        payload["usage"] = usage
+    return httpx.Response(200, json=payload)
+
+
+def test_cli_make_llm_uses_usage_aware_client_for_real_provider() -> None:
+    from app.cli import _make_llm
+    from app.verification.usage import UsageAwareOpenAIClient
+
+    settings = Settings(
+        llm_provider="openai",
+        llm_base_url="http://localhost:11434/v1",
+        llm_api_key=FAKE_KEY,
+    )
+    assert isinstance(_make_llm(settings), UsageAwareOpenAIClient)
+
+
+def test_cli_make_llm_keeps_mock_client_for_mock_provider() -> None:
+    from app.cli import _make_llm
+    from app.llm.client import FakeLLMClient
+
+    assert isinstance(_make_llm(Settings(llm_provider="mock")), FakeLLMClient)
+
+
+def test_cli_verify_prints_provider_reported_usage(
+    settings_with_corpus_real_llm: Settings, monkeypatch, capsys
+) -> None:
+    import httpx
+
+    monkeypatch.setattr(
+        httpx,
+        "post",
+        lambda url, **kwargs: _completion_response(
+            CANNED_ANSWER,
+            usage={"prompt_tokens": 120, "completion_tokens": 24, "total_tokens": 144},
+        ),
+    )
+    from app.cli import cmd_verify
+
+    code = cmd_verify(settings_with_corpus_real_llm, _verify_args("What is CVE-2023-34362?"))
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "Token usage (provider-reported): input=120, output=24, total=144" in out
+    assert "Cost: not estimated (no per-token pricing configured)" in out
+
+
+def test_cli_verify_reports_missing_usage_as_unavailable_not_zero(
+    settings_with_corpus_real_llm: Settings, monkeypatch, capsys
+) -> None:
+    import httpx
+
+    monkeypatch.setattr(
+        httpx,
+        "post",
+        lambda url, **kwargs: _completion_response(CANNED_ANSWER),  # no usage block
+    )
+    from app.cli import cmd_verify
+
+    code = cmd_verify(settings_with_corpus_real_llm, _verify_args("q"))
+    assert code == 0
+    out = capsys.readouterr().out
+    assert "Token usage: unavailable (provider reported none)" in out
+    assert "input=0" not in out, "missing usage must never render as zero"
+
+
+def test_cli_verify_estimates_cost_when_prices_are_configured(
+    settings_with_corpus_real_llm: Settings, monkeypatch, capsys
+) -> None:
+    import httpx
+
+    priced = Settings(
+        database_url=settings_with_corpus_real_llm.database_url,
+        llm_provider="openai",
+        llm_base_url="http://localhost:11434/v1",
+        llm_api_key=FAKE_KEY,
+        llm_price_input_per_million=1.0,
+        llm_price_output_per_million=2.0,
+    )
+    monkeypatch.setattr(
+        httpx,
+        "post",
+        lambda url, **kwargs: _completion_response(
+            CANNED_ANSWER,
+            usage={"prompt_tokens": 120, "completion_tokens": 24, "total_tokens": 144},
+        ),
+    )
+    from app.cli import cmd_verify
+
+    code = cmd_verify(priced, _verify_args("q"))
+    assert code == 0
+    out = capsys.readouterr().out
+    # (120 * 1.0 + 24 * 2.0) / 1_000_000 == 0.000168
+    assert "Cost (estimated): $0.00016800" in out
+
+
+def test_cli_verify_surfaces_partial_pricing_without_crashing(
+    settings_with_corpus_real_llm: Settings, monkeypatch, capsys
+) -> None:
+    import httpx
+
+    partial = Settings(
+        database_url=settings_with_corpus_real_llm.database_url,
+        llm_provider="openai",
+        llm_base_url="http://localhost:11434/v1",
+        llm_api_key=FAKE_KEY,
+        llm_price_input_per_million=1.0,  # output price deliberately missing
+    )
+    monkeypatch.setattr(
+        httpx,
+        "post",
+        lambda url, **kwargs: _completion_response(
+            CANNED_ANSWER,
+            usage={"prompt_tokens": 120, "completion_tokens": 24, "total_tokens": 144},
+        ),
+    )
+    from app.cli import cmd_verify
+
+    code = cmd_verify(partial, _verify_args("q"))
+    assert code == 0, "partial pricing must surface in output, not crash the run"
+    out = capsys.readouterr().out
+    assert "Cost: not estimated (incomplete pricing" in out

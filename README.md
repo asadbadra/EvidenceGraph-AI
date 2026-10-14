@@ -97,8 +97,9 @@ advisories with traceable citations. Under phased development.
   verifier was right".
 
 Not built yet: Streamlit UI, evidence graph, Docker, FastAPI routes. Token
-usage is not yet captured from the provider (recorded as "unavailable"; no
-costs are estimated).
+usage is captured from the provider when it reports any (Stage 2.8); when it
+does not, the record says "unavailable" rather than zero, and no cost is
+estimated unless explicit prices are configured.
 
 ## Requirements
 
@@ -122,10 +123,12 @@ LLM_PROVIDER=mock python -m app.cli verify "What does the Log4j2 advisory say?" 
 ```
 
 The `verify` command runs the same generation as `ask` and then checks each
-claim. `--judge rules` uses the deterministic lexical judge and needs no API
-key; the default `--judge llm` uses the NLI judge and needs a configured
-provider (or `LLM_PROVIDER=mock`, whose fixed output will parse as malformed
-and be reported as `unverifiable` — an honest outcome, not an error).
+claim. `--judge rules` swaps only the *judge* for the deterministic lexical
+one — generation still calls the configured provider, so a key (or
+`LLM_PROVIDER=mock`) is still required. The default `--judge llm` uses the
+NLI judge and likewise needs a configured provider (or `LLM_PROVIDER=mock`,
+whose fixed output will parse as malformed and be reported as `unverifiable`
+— an honest outcome, not an error).
 
 The default `ingest` reads a **local file** and makes no network requests. It
 is labeled as a fixture load in the output and is *not* recorded as a live
@@ -240,7 +243,36 @@ python -m app.cli ask "Which products are affected by CVE-2023-34362?"
 
 Any OpenAI-compatible `/chat/completions` endpoint works (`LLM_BASE_URL`,
 `LLM_API_KEY`, `LLM_MODEL`). Check the provider's current pricing and rate
-limits yourself — nothing here assumes a free tier.
+limits yourself — nothing here assumes a free tier. A local Ollama model
+works the same way: `LLM_BASE_URL=http://localhost:11434/v1` plus any
+non-placeholder `LLM_API_KEY` (Ollama ignores it; the client merely refuses
+an empty one).
+
+## Token usage & cost estimation (Stage 2.8)
+
+`app/verification/usage.py` records what a completion actually cost in
+tokens, and keeps three things strictly apart:
+
+- **Measured** — input/output/total tokens, copied only from the `usage`
+  block the provider returns. Never inferred, never defaulted to zero.
+- **Estimated** — USD cost, computed only when *both*
+  `LLM_PRICE_INPUT_PER_MILLION` and `LLM_PRICE_OUTPUT_PER_MILLION` are
+  configured *and* the tokens were provider-reported. It is labelled an
+  estimate because it is arithmetic on a price list, not an invoice.
+- **Unknowable** — anything the provider omits. A response with no `usage`
+  block is recorded as `unavailable` with null counts. Recording `0` would
+  look like a measurement while understating spend.
+
+Partial pricing (one price set, not both) is refused rather than silently
+applied, and a run's totals are null unless *every* call in it reported
+usage — a partial sum must never read as a total. Self-hosted models such
+as Ollama have no per-token API charge, so leave both prices unset; cost is
+then reported as unavailable, which is correct, because local
+electricity/hardware cost is real but is not measured here. No API key,
+prompt, or response body is ever stored in a usage record.
+
+The mock provider (`LLM_PROVIDER=mock`) surfaces no usage; offline runs
+therefore record `unavailable` and no cost, which is the honest outcome.
 
 ## Reproducibility & audit
 
@@ -363,7 +395,7 @@ requires a live run plus hand labels matched to its output.
 python -m pytest -v
 ```
 
-638 tests, all offline. An autouse fixture **fails any test that opens a
+699 tests, all offline. An autouse fixture **fails any test that opens a
 real socket**, so the suite cannot silently depend on the network. Integration
 tests inject fake fetchers into the real pipeline; fetch-layer tests use
 `httpx.MockTransport`.
@@ -416,6 +448,7 @@ app/
     pipeline.py        VerifiedRAG (baseline generation, then verify)
     metrics.py         mechanism metrics vs judge-human agreement
     harness.py         shared A/B evaluation runner
+    usage.py           provider-reported token usage + optional cost estimate
 data/sample/           committed CISA KEV + NVD records, and the 24-question
                        pilot set (eval_questions.json)
 tests/                 pytest suite (offline)

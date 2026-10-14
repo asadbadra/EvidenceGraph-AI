@@ -251,3 +251,151 @@ def test_return_type_is_claim_extraction_with_both_lists() -> None:
 def test_skipped_defaults_to_empty_tuple() -> None:
     result = extract_claims("Only a claim [1].")
     assert result.skipped == ()
+
+
+# --------------------------------------------------------------------------
+# Smoke-test regressions (Stage 2.9): failures observed in the live local
+# run recorded at runs/smoke-20261014-143159/. `SMOKE_ANSWER` is the
+# verbatim answer llama3.2:latest produced for pilot question direct-02;
+# the expectations below are what extraction should have produced from it.
+# --------------------------------------------------------------------------
+
+SMOKE_ANSWER = (
+    "Based on the provided passages, CVE-2023-34362 is related to a SQL "
+    "injection vulnerability in Progress MOVEit Transfer.\n\n"
+    "According to [1] and [2], Progress MOVEit Transfer contains a SQL "
+    "injection vulnerability that could allow an unauthenticated attacker "
+    "to gain unauthorized access to MOVEit Transfer's database. This "
+    "vulnerability is also mentioned in the CISA advisory [1] and [2], "
+    "which provides additional information on the vulnerability and its "
+    "associated IOCs.\n\n"
+    "Therefore, the type of vulnerability CVE-2023-34362 is a SQL "
+    "injection vulnerability.\n\n"
+    "References:\n"
+    "[1] Progress MOVEit Transfer SQL Injection Vulnerability | "
+    "CVE-2023-34362 | published 2023-06-02 | "
+    "https://nvd.nist.gov/vuln/detail/CVE-2023-34362\n"
+    "[2] Progress MOVEit Transfer SQL Injection Vulnerability | "
+    "CVE-2023-34362 | published 2023-06-02 | "
+    "https://nvd.nist.gov/vuln/detail/CVE-2023-34362"
+)
+
+
+def test_smoke_answer_yields_four_claims_and_one_recorded_skip() -> None:
+    result = extract_claims(SMOKE_ANSWER)
+    assert len(result.claims) == 4
+    assert len(result.skipped) == 1
+    assert result.skipped[0].reason == "bibliography reference list"
+
+
+def test_smoke_answer_every_fragment_is_claim_or_recorded_skip() -> None:
+    """The no-silent-drop invariant holds on the smoke answer too."""
+    result = extract_claims(SMOKE_ANSWER)
+    assert len(result.claims) + len(result.skipped) == 5
+
+
+def test_smoke_answer_bibliography_is_never_a_claim() -> None:
+    result = extract_claims(SMOKE_ANSWER)
+    for claim in result.claims:
+        assert "References:" not in claim.text
+        assert "https://" not in claim.text
+
+
+def test_smoke_answer_attribution_scaffold_is_removed() -> None:
+    result = extract_claims(SMOKE_ANSWER)
+    claim = next(c for c in result.claims if c.text.startswith("Progress MOVEit"))
+    assert claim.text == (
+        "Progress MOVEit Transfer contains a SQL injection vulnerability "
+        "that could allow an unauthenticated attacker to gain unauthorized "
+        "access to MOVEit Transfer's database."
+    )
+    assert "According to" not in claim.text
+    assert claim.markers == ("[1]", "[2]")
+    # Traceability: the span still recovers the sentence as written.
+    assert claim.raw(SMOKE_ANSWER).startswith("According to [1] and [2],")
+
+
+def test_smoke_answer_marker_joiner_is_not_stranded() -> None:
+    result = extract_claims(SMOKE_ANSWER)
+    claim = next(c for c in result.claims if c.text.startswith("This vulnerability"))
+    assert claim.text == (
+        "This vulnerability is also mentioned in the CISA advisory, which "
+        "provides additional information on the vulnerability and its "
+        "associated IOCs."
+    )
+    assert "advisory and," not in claim.text
+    assert claim.markers == ("[1]", "[2]")
+
+
+def test_smoke_answer_legitimate_claims_survive_verbatim() -> None:
+    result = extract_claims(SMOKE_ANSWER)
+    texts = [c.text for c in result.claims]
+    assert (
+        "Based on the provided passages, CVE-2023-34362 is related to a SQL "
+        "injection vulnerability in Progress MOVEit Transfer."
+    ) in texts
+    assert (
+        "Therefore, the type of vulnerability CVE-2023-34362 is a SQL "
+        "injection vulnerability."
+    ) in texts
+
+
+# --- Over-filtering guards: the repairs must stay marker-keyed -------------
+
+
+def test_named_attribution_is_not_treated_as_scaffold() -> None:
+    text = "According to the CISA advisory, CVE-2021-44228 was added on 2021-12-10."
+    result = extract_claims(text)
+    assert [c.text for c in result.claims] == [text]
+
+
+def test_prose_and_comma_clause_is_not_rewritten() -> None:
+    """The joiner repair fires on markers, never on bare prose."""
+    text = "The exploit is weaponized and, according to CISA, actively used."
+    result = extract_claims(text)
+    assert [c.text for c in result.claims] == [text]
+
+
+def test_short_legitimate_claim_is_still_kept() -> None:
+    """Guards against solving extraction quality by dropping short claims."""
+    result = extract_claims("CVE-2021-44228 was added on 2021-12-10 [1].")
+    assert [c.text for c in result.claims] == [
+        "CVE-2021-44228 was added on 2021-12-10."
+    ]
+    assert result.skipped == ()
+
+
+def test_marker_led_assertion_without_url_is_not_dropped() -> None:
+    """A claim opening with [n] is only a reference entry when it carries a URL."""
+    result = extract_claims("[1] confirms the date was 2021-12-10.")
+    assert [c.text for c in result.claims] == ["confirms the date was 2021-12-10."]
+    assert result.skipped == ()
+
+
+def test_heading_followed_by_prose_is_not_dropped() -> None:
+    text = "Sources: CISA added the CVE on 2021-12-10."
+    result = extract_claims(text)
+    assert [c.text for c in result.claims] == [text]
+
+
+def test_bibliography_heading_alone_is_recorded_skip() -> None:
+    result = extract_claims("Some claim. References:")
+    assert [c.text for c in result.claims] == ["Some claim."]
+    assert any(s.reason == "bibliography heading" for s in result.skipped)
+
+
+def test_conjunct_joining_real_words_keeps_and() -> None:
+    """An 'and' between real words is prose, not scaffold: it must survive."""
+    result = extract_claims("The advisory [1] and the notes [2] confirm the finding.")
+    assert [c.text for c in result.claims] == [
+        "The advisory and the notes confirm the finding."
+    ]
+    assert result.claims[0].markers == ("[1]", "[2]")
+
+
+def test_single_marker_before_comma_is_untouched() -> None:
+    """Only multi-marker runs are repaired; a lone '[1],' is already clean."""
+    result = extract_claims("Listed in the CISA advisory [1], which documents it.")
+    assert [c.text for c in result.claims] == [
+        "Listed in the CISA advisory, which documents it."
+    ]

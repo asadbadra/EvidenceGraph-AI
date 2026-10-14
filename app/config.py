@@ -38,6 +38,17 @@ class Settings(BaseSettings):
     # Retrieval
     retrieval_top_k: int = 4
 
+    # Cost estimation (Stage 2.8). Optional: BOTH prices (USD per million
+    # tokens) must be set before any cost is estimated, and cost is only
+    # ever computed from provider-reported token counts. Leave unset to
+    # report cost as "unavailable" -- the honest default, since this project
+    # never guesses a price. Local/self-hosted models (e.g. Ollama) have no
+    # per-token API charge; leaving these unset reports cost as unavailable
+    # for them too, which is correct: electricity/hardware cost is real but
+    # is not measured here.
+    llm_price_input_per_million: float | None = None
+    llm_price_output_per_million: float | None = None
+
     # Chunking
     chunk_max_chars: int = 900
     chunk_overlap_chars: int = 150

@@ -38,6 +38,13 @@ Stage 2.5-2.6 add the evaluation layer:
                     retriever, prompt and model; only the verified pipeline
                     adds the post-generation check.
 
+Stage 2.8 adds honest usage and cost tracking:
+
+- `usage.py`     -- provider-reported token counts (never inferred, never
+                    zeroed when absent) and cost estimates that are only
+                    computed when explicit prices are configured. See its
+                    docstring for the measured/estimated/unknowable split.
+
 The eval tables live in `app/db.py` as additive schema. This package does
 not modify the baseline RAG pipeline.
 
@@ -109,21 +116,43 @@ from app.verification.verdicts import (
     make_verdict,
     summarize,
 )
+from app.verification.usage import (
+    COST_ESTIMATED,
+    COST_UNAVAILABLE,
+    USAGE_PROVIDER,
+    USAGE_UNAVAILABLE,
+    CostEstimate,
+    Pricing,
+    PricingError,
+    TokenUsage,
+    TrackingLLMClient,
+    UsageAwareOpenAIClient,
+    UsageRecord,
+    UsageSummary,
+    UsageTracker,
+    estimate_cost,
+    load_pricing,
+)
 
 __all__ = [
     "ABSTENTION_SENTENCES",
     "CLAIM_RETRIEVAL_TOP_K",
+    "COST_ESTIMATED",
+    "COST_UNAVAILABLE",
     "DEFAULT_CANDIDATE_LIMIT",
     "JUDGE_PROMPT_VERSION",
     "ORIGIN_CITED",
     "ORIGIN_RETRIEVED",
     "SYSTEM_BASELINE",
     "SYSTEM_VERIFIED",
+    "USAGE_PROVIDER",
+    "USAGE_UNAVAILABLE",
     "Agreement",
     "Claim",
     "ClaimExtraction",
     "ClaimVerdict",
     "CitationQuality",
+    "CostEstimate",
     "EvalOutcome",
     "EvidenceCandidate",
     "EvidenceSet",
@@ -131,9 +160,17 @@ __all__ = [
     "JudgeError",
     "LLMJudge",
     "MechanismMetrics",
+    "Pricing",
+    "PricingError",
     "QuestionResult",
     "RuleBasedJudge",
     "SkippedFragment",
+    "TokenUsage",
+    "TrackingLLMClient",
+    "UsageAwareOpenAIClient",
+    "UsageRecord",
+    "UsageSummary",
+    "UsageTracker",
     "Verdict",
     "VerdictSummary",
     "VerifiedAnswerResult",
@@ -141,11 +178,13 @@ __all__ = [
     "build_judge_prompt",
     "citation_quality",
     "citation_quality_for_run",
+    "estimate_cost",
     "extract_claims",
     "judge_agreement",
     "judge_agreement_for_run",
     "link_evidence",
     "load_questions",
+    "load_pricing",
     "make_chunk_exists",
     "make_evidence_verdict",
     "make_verdict",

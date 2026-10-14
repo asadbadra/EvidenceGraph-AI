@@ -12,10 +12,37 @@ Removed (with the reason recorded, never silently):
 - Interrogative fragments -- a question asserts nothing to verify.
 - The canned abstention sentence the baseline prompt instructs the model to
   emit verbatim (see `ABSTENTION_SENTENCES`).
+- Bibliography fragments: a bare heading ("References:") or a list of
+  reference entries (`[n] Title | ... | https://...`). A reference list is
+  not an assertion; promoting it to a claim would inflate the supported
+  count with something no judge can contradict.
 
 Everything else becomes a claim, including hedges and recommendations. Those
 are exactly what `unverifiable` exists to label, and deciding that is the
 classifier's job (Stage 2.3), not the segmenter's.
+
+CITATION SCAFFOLD REPAIR (Stage 2.9)
+------------------------------------
+Observed in the live local smoke test (runs/smoke-20261014-143159): removing
+citation markers can leave behind scaffolding words whose only job was to
+hold the markers in place -- "According to [1] and [2], X" degraded to
+"According to and, X", and "the CISA advisory [1] and [2], which" to "the
+CISA advisory and, which". Two repairs fix exactly those shapes, both
+KEYED TO MARKERS so ordinary prose is never rewritten:
+
+- A leading "According to [n]( and [m])?," attribution is dropped from the
+  claim TEXT: the assertion is what follows the attribution. The markers
+  are still recorded (they are the model's own citations for that
+  assertion) and the span is unchanged, so `raw()` still recovers the
+  sentence exactly as written.
+- A run of two or more markers joined by commas/"and" and terminated by a
+  comma ("[1] and [2],") is removed together with its joiners, leaving the
+  sentence's own comma in place. A single "[1]," needs no repair (the
+  whitespace normaliser already handles it), and an "and" joining real
+  words ("the advisory [1] and the notes [2] confirm X") is kept, because
+  there the conjunction is prose, not scaffold. A blanket "and," -> ","
+  rewrite was considered and rejected: it would corrupt legitimate prose
+  such as "weaponized and, according to CISA, actively used".
 
 CHARACTER SPANS
 ---------------
@@ -159,6 +186,73 @@ def _is_abstention(text: str) -> bool:
     return f"{normalised}." in ABSTENTION_SENTENCES
 
 
+# --- Citation scaffold repair (see module docstring) -----------------------
+#
+# Both patterns are anchored to citation markers on purpose. The failure
+# mode this stage must not repeat is an over-broad text rewrite: a bare
+# "and," -> "," substitution would mangle ordinary prose, so every repair
+# below requires a [n] marker to fire.
+
+# A leading attribution whose objects are only citation markers:
+# "According to [1] and [2], X". The trailing comma and whitespace belong
+# to the scaffold; the assertion starts right after.
+_LEADING_ATTRIBUTION = re.compile(
+    r"\AAccording to\s+\[\d+\](?:\s*(?:,|and|&)\s*\[\d+\])*(?:\s*,)?\s*",
+    re.IGNORECASE,
+)
+
+# Two or more markers joined by commas/"and"/"&" and immediately followed
+# by a comma: "[1] and [2], which ...". The lookahead keeps the sentence's
+# own comma (and everything after it) untouched; a single "[1]," does not
+# match, because the joiner repetition requires at least one extra marker.
+_MARKER_RUN_BEFORE_COMMA = re.compile(
+    r"\[\d+\](?:\s*(?:,|and|&)\s*\[\d+\])+(?=\s*,)"
+)
+
+# Bibliography recognition (see module docstring). Headings are matched
+# exactly; entries are recognised as "[n] ... https://... " with no
+# sentence-terminal punctuation, since prose assertions end with ". " /
+# "! " / "? " and reference entries end with bare URLs.
+_BIBLIOGRAPHY_HEADING = re.compile(
+    r"(?:references|sources|bibliography|works cited|citations)\s*[:.]?\s*",
+    re.IGNORECASE,
+)
+_BIBLIOGRAPHY_LEAD = re.compile(
+    r"\A(?:references|sources|bibliography|works cited|citations)\s*[:.]?\s*",
+    re.IGNORECASE,
+)
+_URL = re.compile(r"https?://", re.IGNORECASE)
+_PROSE_TERMINAL = re.compile(r"[.!?]\s")
+
+
+def _bibliography_reason(fragment: str) -> str | None:
+    """Return a skip reason when `fragment` is a reference list, else None.
+
+    Narrow by design: a heading alone asserts nothing, and an entry list is
+    recognised only as marker-led + URL-bearing + free of sentence-terminal
+    punctuation. The URL requirement keeps a genuine claim that merely opens
+    with a citation marker ("[1] confirms the date was 2021-12-10.") from
+    being swallowed, and a heading followed by prose ("Sources: CISA added
+    the CVE on 2021-12-10.") likewise stays a claim.
+    """
+    if _BIBLIOGRAPHY_HEADING.fullmatch(fragment):
+        return "bibliography heading"
+    body = _BIBLIOGRAPHY_LEAD.sub("", fragment, count=1)
+    if not CITATION_PATTERN.match(body):
+        return None
+    if not _URL.search(body):
+        return None
+    if _PROSE_TERMINAL.search(body):
+        return None
+    return "bibliography reference list"
+
+
+def _strip_citation_scaffold(fragment: str) -> str:
+    """Remove marker-keyed scaffolding words; see module docstring."""
+    without_attribution = _LEADING_ATTRIBUTION.sub("", fragment, count=1)
+    return _MARKER_RUN_BEFORE_COMMA.sub("", without_attribution)
+
+
 def extract_claims(answer_text: str) -> ClaimExtraction:
     """Extract checkable claims from `answer_text`.
 
@@ -186,7 +280,15 @@ def extract_claims(answer_text: str) -> ClaimExtraction:
         end = start + len(stripped)
 
         markers = tuple(m.group(0) for m in CITATION_PATTERN.finditer(stripped))
-        without_markers = _normalise(CITATION_PATTERN.sub("", stripped))
+
+        bibliography = _bibliography_reason(stripped)
+        if bibliography is not None:
+            skipped.append(SkippedFragment(stripped, start, end, bibliography))
+            continue
+
+        without_markers = _normalise(
+            CITATION_PATTERN.sub("", _strip_citation_scaffold(stripped))
+        )
 
         if not without_markers:
             skipped.append(

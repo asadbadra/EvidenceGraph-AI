@@ -140,6 +140,10 @@ class Agreement:
     matched: int = 0
     correct: int = 0
     unlabeled: int = 0
+    # Per gold label, the tuple is (gold occurrences, correct, incorrect):
+    # the count of claims a human labelled with that value, how many the
+    # judge agreed with, and how many it did not. correct + incorrect ==
+    # gold occurrences for every label.
     per_label: Mapping[str, tuple[int, int, int]] = field(default_factory=dict)
     confusion: Mapping[tuple[str, str], int] = field(default_factory=dict)
 

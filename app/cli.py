@@ -67,11 +67,18 @@ from app.ingestion.pipeline import (
     ingest_nvd_sync,
     get_sync_watermark,
 )
-from app.llm.client import FakeLLMClient, LLMClient, LLMError, build_llm_client
+from app.llm.client import FakeLLMClient, LLMClient, LLMError
 from app.pipelines.baseline import BaselineRAG
 from app.retrieval.retriever import Retriever
 from app.verification.judge import LLMJudge, RuleBasedJudge
 from app.verification.pipeline import VerifiedRAG, make_chunk_exists
+from app.verification.usage import (
+    PricingError,
+    TokenUsage,
+    UsageAwareOpenAIClient,
+    estimate_cost,
+    load_pricing,
+)
 
 
 def _make_llm(settings: Settings) -> LLMClient:
@@ -83,7 +90,45 @@ def _make_llm(settings: Settings) -> LLMClient:
                 "generated responses. [1]"
             ),
         )
-    return build_llm_client(settings)
+    # Usage-aware subclass of the baseline client: it inherits the baseline
+    # __init__ verbatim and issues a byte-identical request (pinned by the
+    # parity test in tests/test_usage.py); the only difference is retaining
+    # the provider's `usage` block, which the baseline discards. If the
+    # baseline client ever surfaces usage itself, delete this subclass and
+    # revert to build_llm_client(settings).
+    return UsageAwareOpenAIClient(settings)
+
+
+def _format_usage_line(llm: LLMClient, settings: Settings) -> str:
+    """Render provider-reported token usage and cost status for a run.
+
+    Honesty rules inherited from `app.verification.usage`: token counts
+    appear only when the provider actually reported them (never zero-filled)
+    and a cost figure appears only when configured prices meet
+    provider-reported counts. For a local model such as Ollama, leave the
+    price variables unset: the line then reads "not estimated", which is the
+    correct answer, not a missing one.
+    """
+    usage = getattr(llm, "last_usage", None)
+    if isinstance(usage, TokenUsage) and usage.is_reported:
+        usage_line = (
+            "Token usage (provider-reported): "
+            f"input={usage.input_tokens}, output={usage.output_tokens}, "
+            f"total={usage.total_tokens}"
+        )
+    else:
+        usage_line = "Token usage: unavailable (provider reported none)"
+    recorded = usage if isinstance(usage, TokenUsage) else TokenUsage.unavailable()
+    try:
+        pricing = load_pricing(settings)
+    except PricingError as exc:
+        # A half-configured price list is an operator mistake; surface it
+        # in the output rather than crashing the command or guessing.
+        return f"{usage_line}\nCost: not estimated ({exc})"
+    cost = estimate_cost(recorded, pricing)
+    if cost.is_estimated:
+        return f"{usage_line}\nCost (estimated): ${cost.usd:.8f}"
+    return f"{usage_line}\nCost: not estimated ({cost.reason})"
 
 
 def _print_result(result) -> None:
@@ -346,6 +391,7 @@ def cmd_ask(settings: Settings, args: argparse.Namespace) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     _print_result(result)
+    print(_format_usage_line(llm, settings))
     return 0
 
 
@@ -431,6 +477,7 @@ def cmd_verify(settings: Settings, args: argparse.Namespace) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     _print_verified_result(result)
+    print(_format_usage_line(llm, settings))
     return 0
 
 
