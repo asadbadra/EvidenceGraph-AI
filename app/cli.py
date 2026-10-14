@@ -31,7 +31,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 from pathlib import Path
 
 from sqlalchemy import func, select
@@ -73,9 +73,12 @@ from app.retrieval.retriever import Retriever
 from app.verification.judge import LLMJudge, RuleBasedJudge
 from app.verification.pipeline import VerifiedRAG, make_chunk_exists
 from app.verification.usage import (
+    COST_ESTIMATED,
     PricingError,
     TokenUsage,
+    TrackingLLMClient,
     UsageAwareOpenAIClient,
+    UsageTracker,
     estimate_cost,
     load_pricing,
 )
@@ -100,7 +103,12 @@ def _make_llm(settings: Settings) -> LLMClient:
 
 
 def _format_usage_line(llm: LLMClient, settings: Settings) -> str:
-    """Render provider-reported token usage and cost status for a run.
+    """Render provider-reported token usage for a single-completion run.
+
+    Used by `ask`, whose only completion is the generation call, so the
+    client's `last_usage` *is* the run. Multi-call runs must use
+    `_format_run_usage_line` instead: there, `last_usage` would cover only
+    the final call.
 
     Honesty rules inherited from `app.verification.usage`: token counts
     appear only when the provider actually reported them (never zero-filled)
@@ -129,6 +137,60 @@ def _format_usage_line(llm: LLMClient, settings: Settings) -> str:
     if cost.is_estimated:
         return f"{usage_line}\nCost (estimated): ${cost.usd:.8f}"
     return f"{usage_line}\nCost: not estimated ({cost.reason})"
+
+
+def _format_run_usage_line(
+    tracker: UsageTracker, pricing_error: PricingError | None = None
+) -> str:
+    """Render token usage aggregated over every call recorded by `tracker`.
+
+    Used by `verify`, which makes one generation call plus one call per
+    LLM-judged claim: the raw client's `last_usage` holds only the most
+    recent of these, so a run-level line must come from the tracker.
+
+    Honesty rules (same source as `_format_usage_line`):
+    - Totals print only when *every* recorded call reported counts. A
+      partial sum presented as a total would understate spend and read as
+      measured, so otherwise the line reports "partial" (how many calls
+      reported) or "unavailable" (none did) with no token numbers at all.
+    - A cost figure prints only when every call was priced from configured
+      prices over provider-reported counts; a half-configured price list
+      surfaces as its `PricingError` text instead of a crash or a guess.
+      Local models with no prices configured correctly read "not estimated".
+    """
+    summary = tracker.summary
+    totals_known = (
+        summary.total_input_tokens is not None
+        and summary.total_output_tokens is not None
+        and summary.total_tokens is not None
+    )
+    if summary.calls == 0:
+        usage_line = "Token usage: unavailable (no model calls recorded)"
+    elif summary.usage_complete and totals_known:
+        usage_line = (
+            "Token usage (provider-reported, "
+            f"{summary.calls} call(s)): "
+            f"input={summary.total_input_tokens}, "
+            f"output={summary.total_output_tokens}, "
+            f"total={summary.total_tokens}"
+        )
+    elif summary.records_with_usage == 0:
+        usage_line = (
+            "Token usage: unavailable (provider reported none of the "
+            f"{summary.calls} call(s))"
+        )
+    else:
+        usage_line = (
+            f"Token usage: partial ({summary.records_with_usage} of "
+            f"{summary.calls} call(s) provider-reported; run total "
+            "withheld -- an incomplete sum would read as measured)"
+        )
+
+    if pricing_error is not None:
+        return f"{usage_line}\nCost: not estimated ({pricing_error})"
+    if summary.cost_source == COST_ESTIMATED and summary.total_cost_usd is not None:
+        return f"{usage_line}\nCost (estimated): ${summary.total_cost_usd:.8f}"
+    return f"{usage_line}\nCost: not estimated ({summary.cost_note})"
 
 
 def _print_result(result) -> None:
@@ -461,12 +523,36 @@ def cmd_verify(settings: Settings, args: argparse.Namespace) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
 
-    judge = RuleBasedJudge() if args.judge == "rules" else LLMJudge(llm)
+    # Run-level usage aggregation: every completion this command makes --
+    # the generation call and each LLM judge call (RuleBasedJudge makes
+    # none) -- records into ONE tracker, so the printed totals cover the
+    # whole run. The raw client's last_usage holds only the most recent
+    # call, which the Stage 2.9 smoke test exposed as a last-call-only
+    # line; this tracker is the fix. A half-configured price list is
+    # captured here (not raised) so it surfaces in the cost line.
+    try:
+        pricing = load_pricing(settings)
+    except PricingError as exc:
+        pricing, pricing_error = None, exc
+    else:
+        pricing_error = None
+    tracker = UsageTracker(
+        run_id=f"cli-verify-{datetime.now(timezone.utc):%Y%m%dT%H%M%SZ}",
+        provider=settings.llm_provider,
+        model=getattr(llm, "model", "unknown"),
+        pricing=pricing,
+    )
+
+    judge = (
+        RuleBasedJudge()
+        if args.judge == "rules"
+        else LLMJudge(TrackingLLMClient(llm, tracker, "judge"))
+    )
     # Real-database check: every verdict's evidence ids must resolve to
     # stored chunks, not merely be plausible integers.
     pipeline = VerifiedRAG(
         retriever,
-        llm,
+        TrackingLLMClient(llm, tracker, "generation"),
         top_k=settings.retrieval_top_k,
         judge=judge,
         chunk_is_known=make_chunk_exists(session),
@@ -477,7 +563,7 @@ def cmd_verify(settings: Settings, args: argparse.Namespace) -> int:
         print(f"ERROR: {exc}", file=sys.stderr)
         return 1
     _print_verified_result(result)
-    print(_format_usage_line(llm, settings))
+    print(_format_run_usage_line(tracker, pricing_error))
     return 0
 
 

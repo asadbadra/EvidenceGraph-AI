@@ -274,6 +274,13 @@ prompt, or response body is ever stored in a usage record.
 The mock provider (`LLM_PROVIDER=mock`) surfaces no usage; offline runs
 therefore record `unavailable` and no cost, which is the honest outcome.
 
+`ask` makes one completion, so its printed usage line *is* the run. `verify`
+makes many — the generation call plus one per LLM-judged claim — so it
+aggregates them through the same tracker into a single run-level line:
+totals print only when every call reported usage, otherwise the line says
+`partial` (how many calls reported) or `unavailable`, with no token numbers
+at all.
+
 ## Reproducibility & audit
 
 Every fetch attempt writes one `ingest_runs` row, **including failures**:
@@ -395,7 +402,7 @@ requires a live run plus hand labels matched to its output.
 python -m pytest -v
 ```
 
-699 tests, all offline. An autouse fixture **fails any test that opens a
+706 tests, all offline. An autouse fixture **fails any test that opens a
 real socket**, so the suite cannot silently depend on the network. Integration
 tests inject fake fetchers into the real pipeline; fetch-layer tests use
 `httpx.MockTransport`.

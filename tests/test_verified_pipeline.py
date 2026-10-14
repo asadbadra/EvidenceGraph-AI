@@ -532,21 +532,34 @@ def test_cli_verify_prints_provider_reported_usage(
 ) -> None:
     import httpx
 
-    monkeypatch.setattr(
-        httpx,
-        "post",
-        lambda url, **kwargs: _completion_response(
+    posts: list[str] = []
+
+    def fake_post(url, **kwargs):
+        posts.append(str(url))
+        return _completion_response(
             CANNED_ANSWER,
             usage={"prompt_tokens": 120, "completion_tokens": 24, "total_tokens": 144},
-        ),
-    )
+        )
+
+    monkeypatch.setattr(httpx, "post", fake_post)
     from app.cli import cmd_verify
 
-    code = cmd_verify(settings_with_corpus_real_llm, _verify_args("What is CVE-2023-34362?"))
+    code = cmd_verify(
+        settings_with_corpus_real_llm,
+        _verify_args("What is CVE-2023-34362?", judge="llm"),
+    )
     assert code == 0
+    # Run-level scope: the run must include the generation call AND at
+    # least one judge call, otherwise a last-call-only line could pass.
+    assert len(posts) >= 2, "expected generation + judge completions"
     out = capsys.readouterr().out
-    assert "Token usage (provider-reported): input=120, output=24, total=144" in out
-    assert "Cost: not estimated (no per-token pricing configured)" in out
+    n = len(posts)
+    assert (
+        f"Token usage (provider-reported, {n} call(s)): "
+        f"input={120 * n}, output={24 * n}, total={144 * n}"
+    ) in out
+    assert "Cost: not estimated" in out
+    assert "no per-token pricing configured" in out
 
 
 def test_cli_verify_reports_missing_usage_as_unavailable_not_zero(
@@ -554,17 +567,21 @@ def test_cli_verify_reports_missing_usage_as_unavailable_not_zero(
 ) -> None:
     import httpx
 
-    monkeypatch.setattr(
-        httpx,
-        "post",
-        lambda url, **kwargs: _completion_response(CANNED_ANSWER),  # no usage block
-    )
+    posts: list[str] = []
+
+    def fake_post(url, **kwargs):
+        posts.append(str(url))
+        return _completion_response(CANNED_ANSWER)  # no usage block
+
+    monkeypatch.setattr(httpx, "post", fake_post)
     from app.cli import cmd_verify
 
-    code = cmd_verify(settings_with_corpus_real_llm, _verify_args("q"))
+    code = cmd_verify(settings_with_corpus_real_llm, _verify_args("q", judge="llm"))
     assert code == 0
+    assert len(posts) >= 2, "expected generation + judge completions"
     out = capsys.readouterr().out
-    assert "Token usage: unavailable (provider reported none)" in out
+    n = len(posts)
+    assert f"Token usage: unavailable (provider reported none of the {n} call(s))" in out
     assert "input=0" not in out, "missing usage must never render as zero"
 
 
@@ -581,21 +598,26 @@ def test_cli_verify_estimates_cost_when_prices_are_configured(
         llm_price_input_per_million=1.0,
         llm_price_output_per_million=2.0,
     )
-    monkeypatch.setattr(
-        httpx,
-        "post",
-        lambda url, **kwargs: _completion_response(
+    posts: list[str] = []
+
+    def fake_post(url, **kwargs):
+        posts.append(str(url))
+        return _completion_response(
             CANNED_ANSWER,
             usage={"prompt_tokens": 120, "completion_tokens": 24, "total_tokens": 144},
-        ),
-    )
+        )
+
+    monkeypatch.setattr(httpx, "post", fake_post)
     from app.cli import cmd_verify
 
-    code = cmd_verify(priced, _verify_args("q"))
+    code = cmd_verify(priced, _verify_args("q", judge="llm"))
     assert code == 0
+    assert len(posts) >= 2, "expected generation + judge completions"
     out = capsys.readouterr().out
-    # (120 * 1.0 + 24 * 2.0) / 1_000_000 == 0.000168
-    assert "Cost (estimated): $0.00016800" in out
+    # (120 * 1.0 + 24 * 2.0) / 1_000_000 == 0.000168 per call, summed
+    # across the generation call and every judge call:
+    n = len(posts)
+    assert f"Cost (estimated): ${round(0.000168 * n, 8):.8f}" in out
 
 
 def test_cli_verify_surfaces_partial_pricing_without_crashing(
@@ -624,3 +646,153 @@ def test_cli_verify_surfaces_partial_pricing_without_crashing(
     assert code == 0, "partial pricing must surface in output, not crash the run"
     out = capsys.readouterr().out
     assert "Cost: not estimated (incomplete pricing" in out
+
+
+# --------------------------------------------------------------------------
+# CLI: run-level usage aggregation across ALL calls of a verify run
+# --------------------------------------------------------------------------
+#
+# Follow-up to the Stage 2.9 live smoke test, whose printed usage line
+# covered only the FINAL call (the shared client's last_usage is
+# overwritten per completion). These tests pin the aggregate line's honesty
+# rules end to end and at the formatter level: totals only when every
+# recorded call reported counts, an explicit partial/unavailable with NO
+# token numbers otherwise, and a cost only when every call was priced.
+# All offline: httpx.post is monkeypatched exactly as above.
+
+
+def _run_usage_line(tracker, pricing_error=None) -> str:
+    from app.cli import _format_run_usage_line
+
+    return _format_run_usage_line(tracker, pricing_error)
+
+
+def test_run_usage_line_sums_every_call_when_all_reported() -> None:
+    from app.verification.usage import (
+        USAGE_PROVIDER,
+        TokenUsage,
+        UsageTracker,
+    )
+
+    tracker = UsageTracker(run_id="r", provider="openai", model="m")
+    tracker.record("generation", TokenUsage(100, 10, 110, USAGE_PROVIDER))
+    tracker.record("judge", TokenUsage(80, 40, 120, USAGE_PROVIDER))
+    line = _run_usage_line(tracker)
+    assert (
+        "Token usage (provider-reported, 2 call(s)): "
+        "input=180, output=50, total=230"
+    ) in line
+    assert "Cost: not estimated" in line  # no prices configured
+
+
+def test_run_usage_line_withholds_totals_when_any_call_missing() -> None:
+    from app.verification.usage import (
+        USAGE_PROVIDER,
+        TokenUsage,
+        UsageTracker,
+    )
+
+    tracker = UsageTracker(run_id="r", provider="openai", model="m")
+    tracker.record("generation", TokenUsage(100, 10, 110, USAGE_PROVIDER))
+    tracker.record("judge", TokenUsage.unavailable())
+    line = _run_usage_line(tracker)
+    assert "Token usage: partial (1 of 2 call(s)" in line
+    for fragment in ("input=", "output=", "total="):
+        assert fragment not in line, "an incomplete sum must not print as a total"
+
+
+def test_run_usage_line_unavailable_when_no_call_reported() -> None:
+    from app.verification.usage import TokenUsage, UsageTracker
+
+    tracker = UsageTracker(run_id="r", provider="openai", model="m")
+    tracker.record("generation", TokenUsage.unavailable())
+    tracker.record("judge", TokenUsage.unavailable())
+    assert (
+        "Token usage: unavailable (provider reported none of the 2 call(s))"
+        in _run_usage_line(tracker)
+    )
+
+
+def test_run_usage_line_unavailable_when_no_calls_recorded() -> None:
+    from app.verification.usage import UsageTracker
+
+    tracker = UsageTracker(run_id="r", provider="openai", model="m")
+    assert (
+        "Token usage: unavailable (no model calls recorded)"
+        in _run_usage_line(tracker)
+    )
+
+
+def test_run_usage_line_sums_cost_across_calls_when_priced() -> None:
+    from app.verification.usage import (
+        USAGE_PROVIDER,
+        Pricing,
+        TokenUsage,
+        UsageTracker,
+    )
+
+    tracker = UsageTracker(
+        run_id="r",
+        provider="openai",
+        model="m",
+        pricing=Pricing.from_values(1.0, 2.0),
+    )
+    tracker.record("generation", TokenUsage(120, 24, 144, USAGE_PROVIDER))
+    tracker.record("judge", TokenUsage(120, 24, 144, USAGE_PROVIDER))
+    line = _run_usage_line(tracker)
+    # (120 * 1.0 + 24 * 2.0) / 1_000_000 == 0.000168 per call, two calls:
+    assert "Cost (estimated): $0.00033600" in line
+
+
+def test_run_usage_line_surfaces_pricing_error_without_guessing() -> None:
+    from app.verification.usage import (
+        USAGE_PROVIDER,
+        PricingError,
+        TokenUsage,
+        UsageTracker,
+    )
+
+    tracker = UsageTracker(run_id="r", provider="openai", model="m")
+    tracker.record("generation", TokenUsage(100, 10, 110, USAGE_PROVIDER))
+    line = _run_usage_line(
+        tracker, PricingError("incomplete pricing: missing output price")
+    )
+    assert "Cost: not estimated (incomplete pricing: missing output price)" in line
+
+
+def test_cli_verify_partial_usage_reports_partial_and_withholds_totals(
+    settings_with_corpus_real_llm: Settings, monkeypatch, capsys
+) -> None:
+    import httpx
+
+    state = {"calls": 0}
+
+    def fake_post(url, **kwargs):
+        state["calls"] += 1
+        if state["calls"] == 1:  # generation: provider reports usage...
+            return _completion_response(
+                CANNED_ANSWER,
+                usage={
+                    "prompt_tokens": 100,
+                    "completion_tokens": 50,
+                    "total_tokens": 150,
+                },
+            )
+        return _completion_response(CANNED_ANSWER)  # ...judge calls: no usage
+
+    monkeypatch.setattr(httpx, "post", fake_post)
+    from app.cli import cmd_verify
+
+    code = cmd_verify(settings_with_corpus_real_llm, _verify_args("q", judge="llm"))
+    assert code == 0
+    assert state["calls"] >= 2, "expected generation + judge completions"
+    out = capsys.readouterr().out
+    usage_line = next(
+        line for line in out.splitlines() if line.startswith("Token usage")
+    )
+    assert "partial" in usage_line
+    assert f"1 of {state['calls']} call(s)" in usage_line
+    for fragment in ("input=", "output=", "total="):
+        assert fragment not in usage_line, (
+            "partial usage must never print an incomplete sum as a total"
+        )
