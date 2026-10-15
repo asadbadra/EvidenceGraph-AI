@@ -1,0 +1,11 @@
+# Kept out of the frontend build context (build context: ./frontend).
+# Required application files -- app.py, requirements.txt, Dockerfile -- are
+# deliberately NOT excluded.
+__pycache__
+.pytest_cache
+*.pyc
+*.pyo
+venv
+.venv
+.env
+*.env
