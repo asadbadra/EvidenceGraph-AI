@@ -1,0 +1,16 @@
+# Not needed inside images; keeps builds small and reproducible.
+.git
+.github
+.pytest_cache
+.venv
+venv
+__pycache__
+*.pyc
+runs/
+data/*.db
+data/*.db-journal
+.env
+*.env
+!.env.example
+tests/
+evidencegraph_ai.egg-info

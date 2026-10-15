@@ -1,0 +1,49 @@
+# EvidenceGraph AI -- local-only stack (backend + frontend).
+# Ollama stays on the Windows host; model weights are never packaged.
+# Ports bind to 127.0.0.1 only: this is not exposed to the network.
+#
+# Usage:
+#   docker compose up --build
+#   # then load the sample corpus once:
+#   docker compose exec backend python -m app.cli ingest --file data/sample/advisories.json
+#   # open http://localhost:8501
+
+services:
+  backend:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      # The host's Ollama, reachable from the container via host.docker.internal.
+      LLM_BASE_URL: ${LLM_BASE_URL:-http://host.docker.internal:11434/v1}
+      LLM_PROVIDER: ${LLM_PROVIDER:-openai}
+      LLM_MODEL: ${LLM_MODEL:-llama3.2:latest}
+      LLM_API_KEY: ${LLM_API_KEY:-ollama-local-dummy}
+      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-300}
+      RETRIEVAL_TOP_K: ${RETRIEVAL_TOP_K:-4}
+      # SQLite lives in the named volume, persisted across restarts.
+      DATABASE_URL: sqlite:////srv/evidencegraph/data/evidencegraph.db
+    extra_hosts:
+      # Linux Docker hosts need this; Docker Desktop (Windows/Mac) provides
+      # host.docker.internal natively and ignores it.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - evidencegraph-data:/srv/evidencegraph/data
+      # Run artifacts (eval runs) persist on the host, outside the container.
+      - ./runs:/srv/evidencegraph/runs
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "127.0.0.1:8501:8501"
+    environment:
+      API_BASE_URL: http://backend:8000
+      API_TIMEOUT_SECONDS: "300"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  evidencegraph-data:
