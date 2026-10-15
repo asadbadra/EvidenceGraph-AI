@@ -104,8 +104,10 @@ estimated unless explicit prices are configured.
 ## Requirements
 
 - Python 3.11+ (developed on 3.13.8)
-- Runtime: `pydantic`, `pydantic-settings`, `sqlalchemy`, `httpx`
-  (FastAPI/uvicorn are declared for later phases).
+- Runtime: `pydantic`, `pydantic-settings`, `sqlalchemy`, `httpx`,
+  `fastapi`, `uvicorn` (the API layer).
+- Web UI: `streamlit` + `httpx`, declared separately in
+  `frontend/requirements.txt` (not needed for the CLI or tests).
 - Tests: `pytest`
 
 ```bash
@@ -138,6 +140,121 @@ fetched.
 `LLM_PROVIDER=mock` works as an inline shell variable (bash/zsh) or as a line
 inside `.env` (recommended on Windows PowerShell, where inline `VAR=x cmd`
 syntax is not supported).
+
+## Web application (FastAPI + Streamlit)
+
+The CLI stays the authoritative interface; the web layer is a thin wrapper
+that calls the *same* classes the CLI uses — no pipeline logic is duplicated:
+
+```
+Streamlit UI (frontend/app.py)
+        |  HTTP
+FastAPI  (app/api.py: GET /health, POST /ask)
+        |  in-process calls
+BaselineRAG / VerifiedRAG  ->  Retriever / LLMJudge  ->  SQLite
+```
+
+Run it locally, in two terminals (after `pip install -e ".[dev]"`):
+
+```bash
+# terminal 1 — API on 127.0.0.1:8000
+uvicorn app.api:app --host 127.0.0.1 --port 8000
+
+# terminal 2 — UI on http://localhost:8501 (one-time: pip install -r frontend/requirements.txt)
+streamlit run frontend/app.py
+```
+
+The API's bind address and port reach **Uvicorn as command-line arguments**
+(`--host`, `--port`, as shown above); there are no `API_HOST`/`API_PORT`
+environment variables to set — Uvicorn's own defaults are already
+`127.0.0.1:8000`. For Docker the same flags live in the backend image's
+`CMD`, and Compose publishes the container ports on `127.0.0.1` only
+(see below).
+
+Endpoints (designed from the pipeline's real output fields):
+
+- `GET /health` — database reachability, ingested document/chunk counts,
+  configured LLM provider and model (never the key). `status: "degraded"`
+  reports why instead of crashing. This is a **liveness** check: HTTP 200
+  means the API process and the database are responding — it never contacts
+  the LLM provider, so HTTP 200 does not mean the provider is ready; a
+  provider outage surfaces only as a 502 from `/ask`.
+- `POST /ask` — `{"question": "...", "mode": "verified" | "baseline"}`
+  (mode defaults to `verified`). Returns the answer, model, retrieved
+  passages, format-validated citation markers, honesty `notes`, and — in
+  verified mode only — per-claim verdicts plus a summary. Status codes:
+  422 invalid input, 409 empty corpus, 502 LLM/provider failure,
+  503 database unavailable.
+
+Honesty properties: `verification` is `null` in baseline mode (it performs
+no claim check); a `notes` entry explains every caveat the response carries.
+Each request builds its own engine/session/retriever/LLM client, so
+concurrent requests share no mutable state (the `Retriever` index is
+per-instance and SQLAlchemy sessions are not thread-safe). The API adds no
+verification guarantee of its own — it serialises exactly what
+`BaselineRAG`/`VerifiedRAG` return.
+
+Demo script (a few curl calls; each `/ask` uses your local Ollama):
+
+```bash
+# 1. health: DB reachable, corpus size, provider/model (never the key)
+curl http://localhost:8000/health
+
+# 2. baseline answer (one model call)
+curl -X POST http://localhost:8000/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Which products are affected by CVE-2021-44228?", "mode": "baseline"}'
+
+# 3. verified answer: same generation + claim-level verdicts (several calls)
+curl -X POST http://localhost:8000/ask \
+  -H "Content-Type: application/json" \
+  -d '{"question": "What is CVE-2018-13379 and which products does it affect?", "mode": "verified"}'
+
+# 4. failure modes to show: empty/whitespace question -> 422,
+#    no corpus -> 409, provider down -> 502, DB missing -> 503
+```
+
+## Docker Compose
+
+Requires Docker Desktop with its daemon running. Ollama stays on the Windows
+host; model weights are never copied into images.
+
+```bash
+docker compose up --build
+
+# once per fresh volume — load the sample corpus inside the container:
+docker compose exec backend python -m app.cli ingest --file data/sample/advisories.json
+
+# then open http://localhost:8501 (API: http://localhost:8000/health)
+```
+
+- Both ports bind to `127.0.0.1` only; nothing is exposed to the network.
+- The backend reaches the host's Ollama at `http://host.docker.internal:11434/v1`
+  (compose adds `extra_hosts: host-gateway` for Linux; Docker Desktop
+  provides `host.docker.internal` natively on Windows). Override
+  `LLM_BASE_URL`, `LLM_MODEL`, `LLM_PROVIDER`, `LLM_API_KEY` via environment
+  or `.env` if your setup differs (e.g. `LLM_PROVIDER=mock docker compose up`
+  for an offline demo with no model at all).
+- SQLite persists in the named volume `evidencegraph-data`; `./runs` is
+  mounted from the host, so evaluation artifacts survive container restarts.
+- Health checks: backend `GET /health`, frontend `/_stcore/health`;
+  the frontend starts only after the backend reports healthy. These are
+  liveness checks (process + database only) — a container reported
+  `healthy` never implies the LLM provider is reachable.
+- `.env` files, `data/*.db`, `runs/`, and `.git` are excluded from images by
+  `.dockerignore`; secrets never enter the image or Git.
+
+Troubleshooting:
+
+- `/health` is `ok` but `/ask` returns 502 → Ollama is not reachable from
+  the container. Check it on the host (`ollama serve`, then
+  `curl http://localhost:11434/v1/models`), and from inside the container:
+  `docker compose exec backend python -c "import urllib.request; print(urllib.request.urlopen('http://host.docker.internal:11434/v1/models').status)"`.
+- 409 on `/ask` → the container volume is empty; run the one-time ingest
+  command above.
+- UI says the backend is unreachable → confirm `docker compose ps` shows
+  both services healthy and `API_BASE_URL=http://backend:8000` for the
+  frontend (set automatically by compose).
 
 ## Live ingestion (network)
 
@@ -393,8 +510,17 @@ with no verified claims at all it returns `None`. Citation quality reports
 citation exists and is format-valid, but not which verdict backed the
 sentence it sits on, so that field stays "unknown" rather than being inferred.
 
-No agreement number has been produced for this repository. Producing one
-requires a live run plus hand labels matched to its output.
+Two live runs exist (a completed 2-question mini pilot, then the
+remaining 22 of the 24 questions; both on local Ollama `llama3.2:latest`,
+artifacts in the git-ignored `runs/` directories). One **human** review of
+the mini pilot's 8 stored claims produced judge-vs-human agreement of 5/8
+over exactly-matched claims — real but far too small to quote as
+performance. All 56 claims of the 22-question run carry an **AI-assisted
+annotation draft**, explicitly not independent human ground truth; its
+agreement with the judge (23/56) is recorded as a preliminary non-human
+number only and must never be presented as human accuracy. No human
+agreement figure exists for the 56-claim run; producing one requires a
+person to adopt or revise those draft labels.
 
 ## Tests
 
@@ -402,8 +528,11 @@ requires a live run plus hand labels matched to its output.
 python -m pytest -v
 ```
 
-706 tests, all offline. An autouse fixture **fails any test that opens a
-real socket**, so the suite cannot silently depend on the network. Integration
+720 tests, all offline. An autouse fixture **fails any test that opens a
+real socket**, so the suite cannot silently depend on the network (an
+explicit carve-out allows `socket.socketpair()`, an in-process primitive
+that asyncio needs for its self-pipe wakeup on Windows; every other
+socket call stays blocked). Integration
 tests inject fake fetchers into the real pipeline; fetch-layer tests use
 `httpx.MockTransport`.
 
@@ -436,6 +565,7 @@ app/
   schemas.py           shared pydantic models (chunks, citations, results)
   security.py          citation validation + untrusted-input fencing
   cli.py               command-line entry point (ingest, ask, verify, list, runs)
+  api.py               FastAPI layer: /health + /ask over the same pipeline classes
   ingestion/
     models.py          normalized AdvisoryRecord (source-agnostic)
     parsers.py         pure parsers: KEV + NVD payloads -> records
@@ -458,6 +588,13 @@ app/
     usage.py           provider-reported token usage + optional cost estimate
 data/sample/           committed CISA KEV + NVD records, and the 24-question
                        pilot set (eval_questions.json)
+frontend/
+  app.py               Streamlit UI (talks to the API over HTTP only)
+  requirements.txt     frontend-only dependencies (streamlit, httpx)
+  Dockerfile           frontend image
+Dockerfile             backend image (FastAPI + pipeline, non-root)
+docker-compose.yml     local-only stack; host Ollama via host.docker.internal
+.dockerignore          keeps .git/.env/dbs/runs out of images
 tests/                 pytest suite (offline)
 ```
 
