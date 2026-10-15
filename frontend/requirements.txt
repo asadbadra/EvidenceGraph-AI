@@ -1,0 +1,3 @@
+# Frontend-only dependencies (the backend uses pyproject.toml).
+streamlit>=1.38
+httpx>=0.27
