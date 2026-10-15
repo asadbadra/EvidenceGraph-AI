@@ -26,13 +26,50 @@ DESIGN RULES THAT ARE SAFETY PROPERTIES, NOT STYLE
 The rule-based fallback is deliberately simple and is NOT a competitive NLI
 model. Its accuracy is not a result; it exists so the pipeline is testable
 offline and so the LLM judge has a non-LLM baseline to disagree with.
+
+THE GROUNDING GATE (why prompt hardening was not the fix)
+--------------------------------------------------------
+Demonstrated failure, traced offline and reproduced against local llama3.2:
+the UI question "open source models can easily be hacked" retrieves five
+UNRELATED CVE advisories as candidates (every chunk carries the boilerplate
+token "source"), and the claim as a model answer phrases it -- "Open source
+models can easily be hacked, as shown by the software vulnerabilities
+described in the retrieved advisories." -- came back `supported` citing
+those advisories: a broad conclusion inferred from unrelated software
+vulnerabilities.
+
+The judge prompt was hardened first (explicit rules: shared topic is not
+support; a broad claim needs evidence stating the general proposition;
+prefer abstaining) and then REJECTED on probe evidence: it did not stop the
+embedded-inference case (2/2 live probes still `supported`) and flipped a
+genuinely supported control claim to abstention (1/1). Prompt wording cannot
+teach a 2B local model entailment it cannot do, so the prompt stays at
+judge-v1, byte-identical to the one the historical runs used.
+
+The correction is therefore a deterministic gate in `LLMJudge` (see
+`_apply_grounding_gate`): `supported` must be textually grounded -- the
+cited passages must cover at least `_SUPPORTED_GROUNDING_BAR` (0.50) of the
+claim's content vocabulary -- or it downgrades to
+`insufficient_evidence`, recorded as an anomaly. The gate can only REMOVE
+an endorsement; it never adds or invents a verdict. The bar is lower than
+the rule fallback's 0.60 on purpose: refusal-only checks must not swallow
+real supports, and abbreviation claims ("Log4j2 allows RCE." at exactly
+0.50 against "remote code execution") are the boundary, pinned by tests on
+both sides.
+
+LIMIT: the gate catches subject mismatch (the demonstrated class: 0.18-0.40
+against unrelated advisories), not semantic validity -- related-topic word
+overlap at 0.50+ can still clear it, and a low-overlap paraphrase of
+genuine support will be refused (a recorded abstention, the safe
+direction). Offline tests pin the gate's behavior, not the judge's label
+quality; agreement with human labels remains unmeasured (Stage 2.6).
 """
 
 from __future__ import annotations
 
 import json
 import re
-from typing import Protocol
+from typing import Protocol, Sequence
 
 from app.llm.client import LLMClient
 from app.security import wrap_untrusted
@@ -45,10 +82,21 @@ JUDGE_PROMPT_VERSION = "judge-v1"
 # unparseable verdict is unknown, and unknown must not read as verified.
 MALFORMED_REASON = "judge output was malformed"
 
-# Fallback only: fraction of the claim's content tokens that must appear in
-# some candidate before it counts as lexical support. High, because the
-# fallback is meant to be conservative -- it should abstain rather than guess.
+# Fraction of the claim's content tokens that must appear in some candidate
+# before the rule fallback will affirm. High, because the fallback is meant
+# to be conservative -- it should abstain rather than guess.
 _FALLBACK_SUPPORT_THRESHOLD = 0.6
+
+# Grounding bar for the LLM judge's gate (see `_apply_grounding_gate`):
+# fraction of the claim's content vocabulary the cited passages must cover
+# before a `supported` verdict may stand. Deliberately LOWER than the rule
+# fallback's support threshold: the gate only ever REFUSES an endorsement,
+# so it is tuned to catch subject mismatch -- the demonstrated failure class
+# (0.18-0.40 against unrelated advisories) -- while letting half-covered
+# real supports through, e.g. an abbreviation claim ("Log4j2 allows RCE." is
+# exactly 0.50 against "remote code execution"). The boundary is pinned by
+# tests on both sides.
+_SUPPORTED_GROUNDING_BAR = 0.5
 
 # Tokens carrying no evidential weight for the lexical heuristic.
 _STOPWORDS = frozenset(
@@ -196,12 +244,78 @@ def parse_judge_output(raw: str) -> tuple[ClaimVerdict, list[int], str]:
     return ClaimVerdict(label), ids, rationale.strip()
 
 
+def _grounding_ratio(evidence: EvidenceSet, ids: Sequence[int]) -> float | None:
+    """Coverage of the claim's content vocabulary by the cited candidates.
+
+    Returns None when the claim has no content tokens to ground against
+    (nothing to check), otherwise a fraction in [0, 1]: the share of the
+    claim's DISTINCT content tokens that appear in at least one cited
+    passage. Subject mismatch shows up here as a low ratio -- a claim about
+    "models" versus advisories about Log4j/MOVEit shares only boilerplate.
+    """
+    claim_tokens = set(_content_tokens(evidence.claim.text))
+    if not claim_tokens:
+        return None
+    wanted = {int(i) for i in ids}
+    covered: set[str] = set()
+    for candidate in evidence.candidates:
+        if candidate.chunk_id in wanted:
+            covered.update(_content_tokens(candidate.text))
+    return sum(1 for token in claim_tokens if token in covered) / len(claim_tokens)
+
+
+def _apply_grounding_gate(evidence: EvidenceSet, verdict: Verdict) -> Verdict:
+    """Downgrade an ungrounded `supported` verdict to abstention.
+
+    The deterministic half of the fix for the demonstrated failure (module
+    docstring): a `supported` verdict whose cited passages do not cover the
+    claim's content vocabulary at the shared bar is an endorsement the text
+    does not ground, and the system refuses to report it. The gate can only
+    RETRACT an endorsement -- never add, swap, or invent a verdict -- and
+    every firing is recorded as an anomaly so it shows up in the summary
+    counts and in the UI instead of hiding.
+
+    Known cost, accepted deliberately: a genuine support expressed as a
+    low-overlap paraphrase is refused too. That lands as a recorded
+    abstention, which is the safe direction. A claim with no content tokens
+    skips the gate -- there is nothing to ground against, and inventing a
+    verdict about it would be worse.
+    """
+    if verdict.label is not ClaimVerdict.SUPPORTED:
+        return verdict
+    grounding = _grounding_ratio(evidence, verdict.evidence_chunk_ids)
+    if grounding is None or grounding >= _SUPPORTED_GROUNDING_BAR:
+        return verdict
+    return make_evidence_verdict(
+        evidence,
+        ClaimVerdict.INSUFFICIENT_EVIDENCE,
+        rationale=(
+            f"judge returned 'supported', but the cited passages cover only "
+            f"{grounding:.2f} of the claim's content vocabulary "
+            f"(grounding bar {_SUPPORTED_GROUNDING_BAR:.2f}); downgraded "
+            "to abstention rather than report support the text does not ground"
+        ),
+        extra_anomalies=(
+            f"judge 'supported' with evidence ids "
+            f"{list(verdict.evidence_chunk_ids)} lacked textual grounding "
+            f"({grounding:.2f} < {_SUPPORTED_GROUNDING_BAR:.2f}); "
+            "downgraded to 'insufficient_evidence'",
+        ),
+    )
+
+
 class LLMJudge:
     """NLI-style judge over any `LLMClient`.
 
     Malformed output never becomes `supported`: it lands on `unverifiable`
     with the reason recorded, so a judge that goes off the rails produces an
     honest "we could not verify" rather than a false endorsement.
+
+    A `supported` verdict must additionally pass the grounding gate: the
+    cited passages have to cover enough of the claim's content vocabulary,
+    or the endorsement downgrades to `insufficient_evidence`, recorded as an
+    anomaly. The gate -- not prompt wording -- is what makes the
+    demonstrated related-evidence failure deterministic to catch.
     """
 
     def __init__(self, llm: LLMClient) -> None:
@@ -233,9 +347,12 @@ class LLMJudge:
                 evidence, ClaimVerdict.UNVERIFIABLE, rationale=str(exc)
             )
 
-        return make_evidence_verdict(
+        verdict = make_evidence_verdict(
             evidence, label, evidence_chunk_ids=ids, rationale=rationale
         )
+        # Second, independent refusal: `supported` must be textually grounded
+        # in the passages the judge actually cited (module docstring).
+        return _apply_grounding_gate(evidence, verdict)
 
 
 class RuleBasedJudge:
@@ -260,6 +377,14 @@ class RuleBasedJudge:
 
     Conservative by design: it should say "insufficient" rather than guess.
     Its accuracy is not a research result and must not be reported as one.
+
+    ITS `supported` IS LEXICAL OVERLAP, NOT ENTAILMENT. Short claims can be
+    cleared by shared topic words -- including corpus boilerplate such as
+    "per source record" that appears in every chunk -- so a `supported` here
+    means the words line up, never that a passage was understood. (On the
+    demonstrated claim "Open source models can easily be hacked." it scores
+    0.20 against the real corpus and abstains; that is luck of token counts,
+    not semantic reasoning.)
     """
 
     # Negation cues. A claim carrying one cannot be settled by token overlap

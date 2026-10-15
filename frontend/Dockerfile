@@ -8,7 +8,7 @@ WORKDIR /srv/frontend
 COPY requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY app.py ./
+COPY app.py ui_logic.py ./
 RUN chown -R appuser:appuser /srv/frontend
 USER appuser
 

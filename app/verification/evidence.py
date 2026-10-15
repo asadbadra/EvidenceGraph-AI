@@ -203,6 +203,7 @@ def make_evidence_verdict(
     *,
     evidence_chunk_ids: Sequence[int] = (),
     rationale: str = "",
+    extra_anomalies: Sequence[str] = (),
 ) -> Verdict:
     """Build a verdict, constraining the judge's evidence to this set.
 
@@ -214,7 +215,9 @@ def make_evidence_verdict(
 
     With no ids given, a `supported` label self-downgrades -- correct, since
     claiming support while naming nothing is incoherent. Label correction and
-    downgrade ordering remain `make_verdict`'s, unchanged.
+    downgrade ordering remain `make_verdict`'s, unchanged. `extra_anomalies`
+    forwards a caller-side rule (the grounding gate) into the verdict's
+    audit trail; it can add explanations, never labels or ids.
     """
     return make_verdict(
         evidence.claim,
@@ -222,4 +225,5 @@ def make_evidence_verdict(
         evidence_chunk_ids=evidence_chunk_ids,
         rationale=rationale,
         candidate_chunk_ids=evidence.chunk_ids,
+        extra_anomalies=extra_anomalies,
     )

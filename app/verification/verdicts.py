@@ -171,6 +171,7 @@ def make_verdict(
     evidence_chunk_ids: Sequence[int] = (),
     rationale: str = "",
     candidate_chunk_ids: Sequence[int] | None = None,
+    extra_anomalies: Sequence[str] = (),
 ) -> Verdict:
     """Build a `Verdict`, downgrading rather than ever fabricating evidence.
 
@@ -178,6 +179,13 @@ def make_verdict(
     2.2 fills it). Passing `None` skips membership checking, which is only
     correct before evidence linking exists; Stage 2.2 always supplies it, so
     the "no id outside the candidates" rule is active from that stage on.
+
+    `extra_anomalies` lets a caller record a rule it fired OUTSIDE this
+    function -- e.g. the LLM judge's grounding gate -- without
+    re-implementing or bypassing the invariant to keep the audit trail
+    intact. They can only add explanations, never labels or ids, and are
+    appended after this function's own rules so the invariant's story reads
+    first.
 
     Downgrade order matters and is deliberate:
 
@@ -226,6 +234,9 @@ def make_verdict(
             f"label {label.value!r} cannot carry evidence, dropped {list(ids)}"
         )
         ids = ()
+
+    # Caller-side rules (grounding gate & co.): explanations only.
+    anomalies.extend(str(message) for message in extra_anomalies)
 
     return Verdict(
         claim=claim,

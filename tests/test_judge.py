@@ -13,6 +13,7 @@ accuracy result. `RuleBasedJudge` is a test stand-in, not a quality claim.
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
@@ -481,6 +482,251 @@ def test_rule_judge_never_emits_contradicted_at_all() -> None:
     for chunks, text in samples:
         verdict = judge.judge(link_evidence(_claim(text, markers=("[1]",)), chunks))
         assert verdict.label is not ClaimVerdict.CONTRADICTED, text
+
+
+# --------------------------------------------------------------------------
+# Regression: demonstrated supported-on-unrelated-evidence failure
+# (traced 2026-10-15; see judge.py "THE GROUNDING GATE")
+#
+# The UI question "open source models can easily be hacked" retrieves five
+# UNRELATED CISA KEV advisories as candidates, and a broad conclusion came
+# back marked supported from them. Coverage is split by what each judge can
+# show offline:
+#   - LLMJudge: scripted `supported` responses run through the real
+#     pipeline, so the failure itself is pinnable as behavior --
+#     supported -> insufficient_evidence + recorded anomaly.
+#   - RuleBasedJudge: measured abstention on the same evidence (it never
+#     produced this failure -- proven, not assumed).
+# Passing these tests does NOT show the LLM judge labels reliably; the
+# gate only catches ungrounded endorsements. Label quality vs human
+# labels remains unmeasured (Stage 2.6).
+# --------------------------------------------------------------------------
+
+_ROOT = Path(__file__).resolve().parent.parent
+_KEV_FIXTURE = _ROOT / "data" / "sample" / "advisories.json"
+
+
+def _kev_candidates() -> list[RetrievedChunk]:
+    """The five committed CISA KEV records, formatted like loader chunk text."""
+    payload = json.loads(_KEV_FIXTURE.read_text(encoding="utf-8"))
+    chunks: list[RetrievedChunk] = []
+    for index, record in enumerate(payload["vulnerabilities"], start=1):
+        lines = [
+            f"Advisory: {record['vulnerabilityName']}",
+            f"CVE: {record['cveID']}",
+            f"Vendor: {record['vendorProject']}",
+            f"Product: {record['product']}",
+            record["shortDescription"],
+        ]
+        if record.get("requiredAction"):
+            lines.append(f"Required action: {record['requiredAction']}")
+        lines.append(
+            "Known ransomware campaign use: "
+            f"{record.get('knownRansomwareCampaignUse', 'Unknown')} "
+            "(per source record; not independently verified here)"
+        )
+        chunks.append(
+            RetrievedChunk(
+                chunk_id=index,
+                document_id=index,
+                external_id=record["cveID"],
+                title=record["vulnerabilityName"],
+                source_url=f"https://nvd.nist.gov/vuln/detail/{record['cveID']}",
+                published_at=record.get("dateAdded", ""),
+                text="\n".join(lines),
+                score=1.0,
+            )
+        )
+    return chunks
+
+
+def _broad_claim(*, embedded: bool = False) -> Claim:
+    """The demonstrated claim, in both phrasings observed.
+
+    `embedded=True` is the wording the live reproduction endorsed 2/2: the
+    model answer folds its own inference ("as shown by ...") into the claim,
+    which is what smuggled the broad conclusion past judge-v1.
+    """
+    text = "Open source models can easily be hacked."
+    if embedded:
+        text = (
+            "Open source models can easily be hacked, as shown by the "
+            "software vulnerabilities described in the retrieved advisories."
+        )
+    return _claim(text, markers=("[1]", "[2]", "[3]", "[4]", "[5]"))
+
+
+def test_broad_conclusion_from_unrelated_vulnerabilities_is_gated_to_abstention() -> None:
+    """THE demonstrated failure: the judge endorses the unrelated CISA KEV
+    advisories for the broad claim, and the system must refuse to report
+    that endorsement as support."""
+    evidence = link_evidence(_broad_claim(), _kev_candidates())
+    scripted = ScriptedLLM(
+        [_verdict_payload("supported", [1, 2, 3, 4, 5], "advisories show hacking is easy")]
+    )
+    verdict = LLMJudge(scripted).judge(evidence)
+    assert verdict.label is ClaimVerdict.INSUFFICIENT_EVIDENCE
+    assert verdict.evidence_chunk_ids == ()
+    assert "judge returned 'supported'" in verdict.rationale
+    assert any(
+        "lacked textual grounding" in anomaly and "insufficient_evidence" in anomaly
+        for anomaly in verdict.anomalies
+    ), "the downgrade must be on the audit trail, not silent"
+
+    # Rule path on the same evidence: measured abstention (overlap 0.20).
+    rule_verdict = RuleBasedJudge().judge(evidence)
+    assert rule_verdict.label is ClaimVerdict.INSUFFICIENT_EVIDENCE
+    assert rule_verdict.evidence_chunk_ids == ()
+
+
+def test_embedded_inference_claim_from_the_live_reproduction_is_gated() -> None:
+    """The exact claim phrasing that came back `supported` 2/2 live under
+    judge-v1: the in-claim "as shown by" framing must not smuggle a broad
+    conclusion through verification."""
+    evidence = link_evidence(_broad_claim(embedded=True), _kev_candidates())
+    scripted = ScriptedLLM(
+        [_verdict_payload("supported", [1, 2, 3, 4, 5], "the advisories show it")]
+    )
+    verdict = LLMJudge(scripted).judge(evidence)
+    assert verdict.label is ClaimVerdict.INSUFFICIENT_EVIDENCE
+    assert verdict.evidence_chunk_ids == ()
+    assert any("lacked textual grounding" in a for a in verdict.anomalies)
+
+
+def test_related_topic_evidence_does_not_support_a_claim() -> None:
+    """Shared subject matter (open source, attackers, vulnerabilities)
+    without stating the claim's assertion must not become support."""
+    claim = _claim("Open source models can easily be hacked.")
+    related_topic_passage = _chunk(
+        7,
+        text=(
+            "Open source software is often targeted by attackers who exploit "
+            "vulnerabilities in widely used libraries."
+        ),
+    )
+    evidence = link_evidence(claim, [related_topic_passage])
+
+    # LLM path: an endorsement here must be gated (overlap 0.40 < 0.50).
+    scripted = ScriptedLLM(
+        [_verdict_payload("supported", [7], "same topic, therefore supported")]
+    )
+    verdict = LLMJudge(scripted).judge(evidence)
+    assert verdict.label is ClaimVerdict.INSUFFICIENT_EVIDENCE
+    assert verdict.evidence_chunk_ids == ()
+    assert any("lacked textual grounding" in a for a in verdict.anomalies)
+
+    # Rule path: abstains on its own (measured overlap 0.40).
+    assert (
+        RuleBasedJudge().judge(evidence).label is ClaimVerdict.INSUFFICIENT_EVIDENCE
+    )
+
+
+def test_directly_supporting_evidence_passes_the_gate_for_both_judges() -> None:
+    """The fix must not suppress genuine support: verbatim corpus support
+    clears the grounding bar and stands, for both judges."""
+    claim_text = (
+        "Progress MOVEit Transfer contains a SQL injection vulnerability that "
+        "could allow an unauthenticated attacker to gain unauthorized access "
+        "to MOVEit Transfer's database."
+    )
+    moveit = next(c for c in _kev_candidates() if c.external_id == "CVE-2023-34362")
+    evidence = link_evidence(_claim(claim_text), [moveit])
+
+    scripted = ScriptedLLM(
+        [_verdict_payload("supported", [moveit.chunk_id], "states this verbatim")]
+    )
+    llm_verdict = LLMJudge(scripted).judge(evidence)
+    assert llm_verdict.label is ClaimVerdict.SUPPORTED
+    assert llm_verdict.evidence_chunk_ids == (moveit.chunk_id,)
+    assert llm_verdict.anomalies == ()
+
+    rule_verdict = RuleBasedJudge().judge(evidence)
+    assert rule_verdict.label is ClaimVerdict.SUPPORTED
+    assert rule_verdict.evidence_chunk_ids == (moveit.chunk_id,)
+
+
+def test_gate_accepts_abbreviation_style_support_at_the_bar() -> None:
+    """Boundary, high side: a claim using an abbreviation the passage
+    expands ("RCE" vs "remote code execution") covers exactly 0.50 of its
+    content vocabulary and must STAND -- the gate refuses ungrounded
+    endorsements, not shorthand ones. (0.50 is the bar; below it, the
+    related-topic and unrelated-advisory cases are refused.)"""
+    claim = _claim("Log4j2 allows RCE.")
+    passage = _chunk(
+        101,
+        text=(
+            "Apache Log4j2 2.14.1 allows remote code execution in the log "
+            "message lookup feature."
+        ),
+    )
+    evidence = link_evidence(claim, [passage])
+    scripted = ScriptedLLM(
+        [_verdict_payload("supported", [101], "passage states it")]
+    )
+    verdict = LLMJudge(scripted).judge(evidence)
+    assert verdict.label is ClaimVerdict.SUPPORTED
+    assert verdict.evidence_chunk_ids == (101,)
+    assert verdict.anomalies == ()
+
+
+def test_contradictory_evidence_rule_judge_abstains_rather_than_picking_sides() -> None:
+    """The passage says path traversal exists; the claim says it does not.
+    Semantically contradictory -- but the lexical fallback cannot read
+    polarity, so it must abstain: never `supported`, never invented
+    `contradicted`."""
+    claim = _claim("Fortinet FortiOS does not contain a path traversal vulnerability.")
+    fortios = next(c for c in _kev_candidates() if c.external_id == "CVE-2018-13379")
+    verdict = RuleBasedJudge().judge(link_evidence(claim, [fortios]))
+    assert verdict.label is ClaimVerdict.INSUFFICIENT_EVIDENCE
+    assert verdict.evidence_chunk_ids == ()
+
+
+def test_contradictory_evidence_llm_path_can_record_contradicted() -> None:
+    """LLM-path mechanics are unchanged: a well-formed `contradicted` reply
+    whose ids are in the candidate set survives (corpus-faithful claim)."""
+    fortios = next(c for c in _kev_candidates() if c.external_id == "CVE-2018-13379")
+    claim = _claim("Fortinet FortiOS does not contain a path traversal vulnerability.")
+    scripted = ScriptedLLM(
+        [
+            _verdict_payload(
+                "contradicted",
+                [fortios.chunk_id],
+                "the passage states a path traversal vulnerability exists",
+            )
+        ]
+    )
+    verdict = LLMJudge(scripted).judge(link_evidence(claim, [fortios]))
+    assert verdict.label is ClaimVerdict.CONTRADICTED
+    assert verdict.evidence_chunk_ids == (fortios.chunk_id,)
+
+
+def test_insufficient_or_ambiguous_evidence_abstains() -> None:
+    """A plausible attribution the corpus never states: silent, abstain."""
+    claim = _claim(
+        "The vulnerability was discovered by an independent security researcher."
+    )
+    log4j = next(c for c in _kev_candidates() if c.external_id == "CVE-2021-44228")
+    verdict = RuleBasedJudge().judge(link_evidence(claim, [log4j]))
+    assert verdict.label is ClaimVerdict.INSUFFICIENT_EVIDENCE
+    assert verdict.evidence_chunk_ids == ()
+
+
+def test_judge_prompt_stays_at_v1_and_carries_no_rejected_guard_text() -> None:
+    """Prompt hardening was tried and REJECTED on probe evidence (module
+    docstring of app/verification/judge.py): it did not stop the failure
+    and over-abstained on a control claim. The fix is the grounding gate,
+    so the prompt stays byte-identical to what the historical runs used --
+    this test stops the rejected wording from creeping back in unexamined,
+    since changing the prompt is a research-methodology change."""
+    prompt = build_judge_prompt(_evidence())
+    assert JUDGE_PROMPT_VERSION == "judge-v1"
+    for rejected in (
+        "Sharing a topic is NOT support",
+        "broad or general claim",
+        "Prefer abstaining over guessing",
+        "states or directly entails",
+    ):
+        assert rejected not in prompt
 
 
 # --------------------------------------------------------------------------
