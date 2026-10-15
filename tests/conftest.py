@@ -21,6 +21,14 @@ def _block_real_network(monkeypatch: pytest.MonkeyPatch):
     The whole suite must run offline and deterministically (research
     reproducibility). Tests that need HTTP inject `httpx.MockTransport`;
     anything else that reaches for the network is a bug, not a flake.
+
+    socket.socketpair() is allowed: it is an IN-PROCESS primitive, not
+    network access. On Unix it is a Unix-domain pair; Windows Python
+    emulates it with a loopback TCP pair (which calls socket.connect
+    internally), and asyncio's event loop needs it for its self-pipe
+    wakeup -- which anyio's blocking portal (FastAPI TestClient) relies
+    on. Allowing socketpair does not weaken the guard: connect,
+    create_connection, and getaddrinfo stay blocked for every other call.
     """
 
     def _blocked(*args, **kwargs):
@@ -29,9 +37,18 @@ def _block_real_network(monkeypatch: pytest.MonkeyPatch):
             "(see tests/test_fetchers.py) instead of a live endpoint."
         )
 
+    real_connect = socket.socket.connect
+    real_socketpair = socket.socketpair
+
+    def _permissive_socketpair(*args, **kwargs):
+        with monkeypatch.context() as m:
+            m.setattr(socket.socket, "connect", real_connect)
+            return real_socketpair(*args, **kwargs)
+
     monkeypatch.setattr(socket.socket, "connect", _blocked)
     monkeypatch.setattr(socket, "create_connection", _blocked)
     monkeypatch.setattr(socket, "getaddrinfo", _blocked)
+    monkeypatch.setattr(socket, "socketpair", _permissive_socketpair)
 
 
 @pytest.fixture()
