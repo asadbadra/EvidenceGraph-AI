@@ -19,8 +19,9 @@ Design decisions (kept deliberately boring):
   record which verdict backed which citation marker.
 - Error handling mirrors the CLI: empty corpus -> 409, LLM failures -> 502,
   with no secrets or stack traces in responses.
-- Bindings default to localhost (API_HOST/API_PORT env vars); the app never
-  configures itself for public exposure.
+- Bindings come from Uvicorn's command-line flags only (`--host`/`--port`,
+  defaults 127.0.0.1:8000); there are no API_HOST/API_PORT env vars, and
+  the app never configures itself for public exposure.
 - The API key is never read into or returned from any response model.
 """
 
@@ -135,7 +136,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         # Create tables once at startup (same init the CLI performs). This is
         # the only write the API ever makes to the database. A failure here
         # must not crash-loop the container: /health reports "degraded"
-        # instead, and /ask fails with a clear 409/500 until the DB works.
+        # instead, and /ask answers 503 (database unavailable) or 409
+        # (empty corpus) until the DB works -- never a raw 500 traceback.
         try:
             init_db(make_engine(settings.database_url))
         except Exception:
@@ -163,7 +165,11 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/health", response_model=HealthOut)
     def health() -> HealthOut:
-        """Liveness + readiness. No LLM call; DB reachability only."""
+        """Liveness check: no LLM call, DB reachability only.
+
+        Always HTTP 200; readiness detail lives in the payload
+        (`status: "ok" | "degraded"`), not in the status code.
+        """
         from sqlalchemy import func, select
 
         from app.db import Chunk, Document
@@ -328,5 +334,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     return app
 
 
-# Uvicorn entry point: `uvicorn app.api:app` (configure via API_HOST/API_PORT).
+# Uvicorn entry point: the bind address/port are Uvicorn CLI flags, e.g.
+# `uvicorn app.api:app --host 127.0.0.1 --port 8000` (not env vars).
 app = create_app()
