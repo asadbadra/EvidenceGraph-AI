@@ -1,0 +1,48 @@
+# Constraints file: exact versions of the full dependency closure, verified
+# by the 763-test suite on Python 3.13.8 / Windows (Stage A, 2026-10-16).
+#
+# Usage (constrains versions; never adds or removes packages):
+#     pip install -c constraints.txt -e ".[dev]"
+#
+# pyproject.toml keeps its `>=` lower bounds so the package stays installable
+# in other environments; this file pins what was actually tested. It covers
+# the backend and test closures of pyproject.toml (fastapi, uvicorn, pydantic,
+# pydantic-settings, sqlalchemy, httpx, pytest) plus their transitive
+# dependencies. The Streamlit frontend is NOT covered: streamlit is not
+# installed in the verified environment (frontend/requirements.txt keeps its
+# `>=` ranges), disclosed as an open reproducibility gap.
+#
+# colorama is Windows-only (pytest dependency via its platform marker) and
+# greenlet is only installed on Python < 3.14 (SQLAlchemy); both are listed
+# unconditionally because constraints never force an installation.
+
+# --- runtime ---
+anyio==4.14.0
+annotated-doc==0.0.4
+annotated-types==0.7.0
+certifi==2026.6.17
+click==8.4.1
+colorama==0.4.6
+fastapi==0.138.0
+greenlet==3.5.2
+h11==0.16.0
+httpcore==1.0.9
+httpx==0.28.1
+idna==3.18
+pydantic==2.13.4
+pydantic-core==2.46.4
+pydantic-settings==2.14.2
+pygments==2.20.0
+python-dotenv==1.2.2
+sniffio==1.3.1
+sqlalchemy==2.0.50
+starlette==1.3.1
+typing-extensions==4.15.0
+typing-inspection==0.4.2
+uvicorn==0.49.0
+
+# --- test ---
+iniconfig==2.3.1
+packaging==26.2
+pluggy==1.6.0
+pytest==9.1.1

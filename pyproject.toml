@@ -21,8 +21,12 @@ dev = [
 requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["app"]
+# `packages = ["app"]` shipped only the top-level app/*.py files in wheels,
+# silently dropping every subpackage (app.ingestion, app.llm, app.pipelines,
+# app.retrieval, app.verification) from `pip install .` builds. A pattern
+# find keeps the wheel complete as new subpackages are added.
+[tool.setuptools.packages.find]
+include = ["app*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -96,7 +96,10 @@ advisories with traceable citations. Under phased development.
   metrics that keep "what the verifier said" separate from "whether the
   verifier was right".
 
-Not built yet: Streamlit UI, evidence graph, Docker, FastAPI routes. Token
+The Streamlit UI, Docker Compose stack, and FastAPI routes described as
+future work in earlier drafts are now built (see below). Still not built: an
+evidence-graph data structure or visualization — the graph mark in the UI is
+decorative, and citations remain tabular. Token
 usage is captured from the provider when it reports any (Stage 2.8); when it
 does not, the record says "unavailable" rather than zero, and no cost is
 estimated unless explicit prices are configured.
@@ -113,6 +116,18 @@ estimated unless explicit prices are configured.
 ```bash
 pip install -e ".[dev]"     # or: pip install pydantic pydantic-settings sqlalchemy httpx pytest
 ```
+
+For a reproducible install, pin the full dependency closure to the exact
+versions the test suite is verified against (constraints only pin versions;
+they never change which packages get installed):
+
+```bash
+pip install -c constraints.txt -e ".[dev]"
+```
+
+The Streamlit frontend is not covered by `constraints.txt`: `streamlit` is
+not installed in the verified environment, so pinning it would mean shipping
+an untested version. `frontend/requirements.txt` keeps its `>=` ranges.
 
 ## Quick start (offline, no API key)
 
@@ -433,6 +448,35 @@ rather than silently keeping the first 2,000. Each page is its own
 transaction and its own audit row — if page 3 fails, pages 1–2 are already
 committed and the run reports `partial`.
 
+### Evaluation-run provenance (the tracked runner)
+
+The two historical pilot runs were driven by one-off scripts kept in the
+git-ignored `runs/` directories, so their artifacts record no Git commit.
+`app.verification.runner` is the tracked replacement: it runs the A/B
+harness over a disposable copy of the database (never touching
+`data/evidencegraph.db`) and writes two files into a fresh timestamped run
+directory:
+
+- `manifest.json`, written *before* the first model call: Git commit and
+  dirty flag, provider/model, configuration (temperature, top-k, judge,
+  prompt versions, question ids), dataset SHA-256, corpus SHA-256, UTC
+  timestamp, and the output locations.
+- `report.json`, written at the end: status, per-system stored-row
+  summaries, citation quality, token usage, and the source database's
+  before/after hashes with an `unchanged` flag.
+
+It refuses non-local endpoints unless `--allow-remote-endpoint` is passed
+(the override is recorded in the manifest), refuses to reuse an existing run
+directory, rolls back and records an honest `failed` report if a run dies
+mid-way — including a run that dies before the manifest is written, whose
+report says so explicitly — and never writes gold labels
+(`verif_claims.gold_label` stays NULL).
+
+```bash
+LLM_PROVIDER=mock python -m app.verification.runner --judge rules \
+    --question-id direct-01 --notes "runner smoke test"
+```
+
 ## How claim verification works
 
 Verification is **post-generation**. The verified pipeline produces the exact
@@ -474,10 +518,13 @@ plausible-but-absent, contradiction/misattribution, and non-factual. Gold
 labels are at the proposition level and drawn only from the committed
 fixtures.
 
-**This is a pilot, not a benchmark.** 24 questions over a 6-record corpus
-cannot support generalizable claims, and no accuracy, cost, or performance
-figure should be inferred from it. It exists so the harness, the schema, and
-the metrics are runnable, reproducible, and honest about what they measure.
+**This is a pilot, not a benchmark.** 24 questions over the committed
+six-record sample corpus (five CISA KEV records plus one NVD record; the two
+historical runs below used a disposable copy of the database holding only
+the five KEV records as six chunks) cannot support generalizable claims, and
+no accuracy, cost, or performance figure should be inferred from it. It
+exists so the harness, the schema, and the metrics are runnable,
+reproducible, and honest about what they measure.
 
 Two categories of number are kept strictly apart:
 
@@ -522,13 +569,24 @@ number only and must never be presented as human accuracy. No human
 agreement figure exists for the 56-claim run; producing one requires a
 person to adopt or revise those draft labels.
 
+**Historical status of these runs.** Both runs completed on 2026-10-14,
+*before* the grounding-gate fix (commit `b370fa4`, 2026-10-15), so every
+verdict they contain reflects pre-gate judge behavior, and their artifacts
+record no Git commit — the reproducibility gap the tracked runner above
+closes. Baseline and verified answers also differ on 7 of the 22 paired
+questions despite temperature 0 (the two systems make independent
+generation calls), with one run per question, no repeats, and no
+significance testing. Treat these numbers as historical pilot findings that
+motivate the controlled experiments planned for the next stages, not as
+results.
+
 ## Tests
 
 ```bash
 python -m pytest -v
 ```
 
-720 tests, all offline. An autouse fixture **fails any test that opens a
+763 tests, all offline. An autouse fixture **fails any test that opens a
 real socket**, so the suite cannot silently depend on the network (an
 explicit carve-out allows `socket.socketpair()`, an in-process primitive
 that asyncio needs for its self-pipe wakeup on Windows; every other
@@ -584,7 +642,8 @@ app/
     judge.py           LLM NLI judge + deterministic rule-based fallback
     pipeline.py        VerifiedRAG (baseline generation, then verify)
     metrics.py         mechanism metrics vs judge-human agreement
-    harness.py         shared A/B evaluation runner
+    harness.py         shared A/B evaluation harness
+    runner.py          tracked runner: provenance manifest + report per run
     usage.py           provider-reported token usage + optional cost estimate
 data/sample/           committed CISA KEV + NVD records, and the 24-question
                        pilot set (eval_questions.json)
@@ -595,6 +654,7 @@ frontend/
 Dockerfile             backend image (FastAPI + pipeline, non-root)
 docker-compose.yml     local-only stack; host Ollama via host.docker.internal
 .dockerignore          keeps .git/.env/dbs/runs out of images
+constraints.txt        exact pinned versions of the verified dependency closure
 tests/                 pytest suite (offline)
 ```
 
