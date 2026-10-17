@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "evidencegraph-ai/annotation-schema/v1.0.0",
+  "title": "EvidenceGraph-AI Human Annotation Record",
+  "description": "One human-review annotation slot for one claim (system_arm=verified) or one abstention question (system_arm=verified, claim-level fields null). Human fields are emitted EMPTY; they are populated only by an actual human reviewer. proposed_ai_label is an explicitly non-ground-truth secondary view and must never be counted as a human label. No default label of any kind is assigned to unreviewed items.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "annotation_id",
+    "schema_version",
+    "item_type",
+    "question_id",
+    "run_id",
+    "system_arm",
+    "claim_id",
+    "claim_text",
+    "paired_answer_texts",
+    "retrieved_evidence_ids",
+    "evidence_text_or_reference",
+    "system_verdict",
+    "system_diagnostics",
+    "system_verdict_visibility",
+    "proposed_ai_label",
+    "proposed_ai_label_source",
+    "human_label",
+    "human_rationale",
+    "evidence_sufficiency_rationale",
+    "citation_support_label",
+    "citation_support_rationale",
+    "reviewer_id",
+    "review_timestamp",
+    "review_status",
+    "uncertainty_notes",
+    "adjudicated_label",
+    "adjudication_rationale",
+    "abstention_assessment",
+    "item_priority",
+    "source_artifact_refs"
+  ],
+  "properties": {
+    "annotation_id": {
+      "type": "string",
+      "pattern": "^ann-d1-[0-9]{4}$",
+      "description": "Stable identifier for this annotation slot within dataset version d1. Format: ann-d1-NNNN (zero-padded, queue order). Never reused across dataset versions."
+    },
+    "schema_version": {
+      "type": "string",
+      "const": "1.0.0",
+      "description": "Version of this annotation schema. Bump on any field or allowed-value change; never edit records in place under a changed version."
+    },
+    "item_type": {
+      "type": "string",
+      "enum": ["claim", "abstention_question"],
+      "description": "claim = one extracted claim from a verified-arm answer. abstention_question = one zero-claim abstaining question reviewed at question level (human_label/claim fields left null; abstention assessment is recorded in human_label_slot per guidelines section F via review of the question)."
+    },
+    "question_id": {
+      "type": "string",
+      "description": "Question identifier from data/sample/eval_questions.json (e.g. 'direct-03'). For claim items this is the question the claim was extracted from."
+    },
+    "claim_id": {
+      "type": ["integer", "null"],
+      "description": "Primary key verif_claims.id from the SOURCE run database (runs/eval-postgate22-20261016-141416/evidencegraph-eval.db). Null for abstention_question items. Preserved verbatim; never renumbered."
+    },
+    "run_id": {
+      "type": "string",
+      "enum": ["eval-postgate22-20261016-141416", "eval-pilot22-20261014-181354"],
+      "description": "Source run. Primary queue is built on the Stage B post-gate run; the historical run id is allowed only for paired-reference rows if a future extension adds them."
+    },
+    "system_arm": {
+      "type": "string",
+      "enum": ["verified"],
+      "description": "Which system arm produced the item. Only the verified arm yields claims (the baseline arm performs no claim verification by design); abstention questions are also assessed on the verified arm, with the baseline answer provided as paired reference in source_artifact_refs."
+    },
+    "claim_text": {
+      "type": ["string", "null"],
+      "description": "Byte-verbatim claim text from verif_claims.claim_text (claim items). Null for abstention_question items."
+    },
+    "paired_answer_texts": {
+      "type": "object",
+      "description": "Paired question structure: the generated answers for this question from both arms of the SAME run, byte-verbatim from eval_results.answer_text. Lets reviewers compare baseline vs verified answers for one question without leaving the item. Immutable.",
+      "required": ["baseline", "verified"],
+      "properties": {
+        "baseline": { "type": ["string", "null"], "description": "Baseline-arm answer text for this question (null if row missing; never reconstructed)." },
+        "verified": { "type": ["string", "null"], "description": "Verified-arm answer text for this question (null if row missing)." }
+      }
+    },
+    "retrieved_evidence_ids": {
+      "type": ["array", "null"],
+      "items": { "type": "integer" },
+      "description": "Chunk ids the system cited for this claim, as stored in the source run (verif_claims.evidence_ids_json). For claims retracted by the grounding gate the post-gate store is empty by design; the originally-cited ids are recovered from the gate anomaly note and cross-validated against the historical run (13/13 agreed in Stage C) and recorded here with provenance in evidence_text_or_reference. Empty array means the system cited nothing; null means not applicable (abstention_question)."
+    },
+    "evidence_text_or_reference": {
+      "type": ["array", "null"],
+      "items": {
+        "type": "object",
+        "required": ["chunk_id", "document_external_id", "text", "text_source", "selection_source"],
+        "properties": {
+          "chunk_id": { "type": "integer" },
+          "document_external_id": { "type": "string" },
+          "text": { "type": ["string", "null"], "description": "Verbatim chunk text from the source run DB copy; null if unavailable (never silently reconstructed)." },
+          "text_source": {
+            "type": "string",
+            "enum": ["source_run_db_verbatim", "unavailable_not_stored"]
+          },
+          "selection_source": {
+            "type": "string",
+            "enum": [
+              "judge_cited_stored",
+              "judge_cited_recovered_from_anomaly_note_and_historical_db",
+              "question_retrieval_reconstruction_validated"
+            ],
+            "description": "Why this chunk is shown: the judge cited it (stored or recovered), or it belongs to the question's retrieved set, which is a deterministic BM25 reconstruction validated 22/22 against stored retrieved_count (Stage C). Text itself is always verbatim from the run DB regardless of selection_source."
+          }
+        }
+      },
+      "description": "Evidence shown to the reviewer: every cited chunk with verbatim text and stable reference (chunk_id + document external id). For abstention questions: the retrieved passages (reconstruction validated 22/22 against stored retrieved_count in Stage C, marked as reconstruction). Unavailable fields are marked, never invented."
+    },
+    "system_verdict": {
+      "type": ["string", "null"],
+      "enum": ["supported", "contradicted", "insufficient_evidence", "unverifiable", "abstained_no_claims", null],
+      "description": "The system's stored verdict (verif_claims.label) for claim items; 'abstained_no_claims' for abstention questions; null never occurs in d1 but is allowed by schema for future rows. DISPLAY: hidden in the blind queue; present only in the full queue and only after the reviewer has recorded a first judgment (or consciously waived blinding)."
+    },
+    "system_diagnostics": {
+      "type": ["object", "null"],
+      "description": "System-output diagnostics, shown ONLY in the full queue (null in the blind file). Never ground truth; for reviewer context and later analysis only.",
+      "properties": {
+        "anomaly_notes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Verbatim anomaly strings from verif_claims.anomalies_json (e.g. the grounding-gate retraction note with its grounding ratio, or a pre-existing rule note)."
+        },
+        "grounding_ratio": {
+          "type": ["number", "null"],
+          "description": "Grounding ratio parsed from the gate anomaly note (0.00-0.47 observed); null for non-gate anomalies and normal claims. Bar is 0.50 (judge config, not a human threshold)."
+        }
+      }
+    },
+    "system_verdict_visibility": {
+      "type": "string",
+      "enum": ["blind_first_judgment_required", "visible_acknowledged"],
+      "description": "Anti-confirmation-bias control. blind_first_judgment_required: reviewer must judge from human_review_queue_blind.csv first. visible_acknowledged: reviewer explicitly chose to see verdicts (record in uncertainty_notes why)."
+    },
+    "proposed_ai_label": {
+      "type": ["string", "null"],
+      "enum": ["supported", "contradicted", "insufficient_evidence", "unverifiable", null],
+      "description": "NON-GROUND-TRUTH secondary view only: the AI-draft label from runs/eval-pilot22-20261014-181354/human_claim_review56.md where a (question_id, claim_id) mapping exists. NEVER a human label; never counted in agreement or accuracy statistics; excluded from the blind review file. Null when no AI draft exists for the item (e.g. abstention questions, or post-gate-only claims)."
+    },
+    "proposed_ai_label_source": {
+      "type": ["string", "null"],
+      "description": "Human-readable provenance string for proposed_ai_label (e.g. 'AI-assisted draft, human_claim_review56.md sha256:867876…; provenance=ai_generated_draft per stage_d_provenance_audit.md'). Null when proposed_ai_label is null."
+    },
+    "human_label": {
+      "type": ["string", "null"],
+      "enum": ["supported", "contradicted", "insufficient_evidence", "unverifiable", "not_applicable", null],
+      "description": "THE human judgment (dimension A/B combined per guidelines: corpus-grounded factuality of the claim as written). EMPTY (null) until a human supplies it. For abstention_question items: the question-level abstention assessment uses this field with values appropriate_abstention/inappropriate_abstention/uncertain — see abstention_assessment field below for the dedicated field; on claim items this field is the claim label. No default value is ever assigned."
+    },
+    "human_rationale": {
+      "type": ["string", "null"],
+      "description": "Reviewer's free-text rationale for human_label, citing specific evidence (chunk ids) and quoting the supporting text. EMPTY until supplied by a human."
+    },
+    "evidence_sufficiency_rationale": {
+      "type": ["string", "null"],
+      "description": "Reviewer's assessment of dimension B (evidence sufficiency): does the retrieved evidence support the SPECIFIC claim rather than merely discuss the same topic? Quote or name the exact span(s). EMPTY until supplied by a human."
+    },
+    "citation_support_label": {
+      "type": ["string", "null"],
+      "enum": ["supported", "contradicted", "insufficient_evidence", "unverifiable", "not_applicable", null],
+      "description": "Dimension C: does the cited passage actually support the claim it is attached to? not_applicable = the claim cites nothing (or citations are unavailable); null = not yet reviewed. EMPTY until supplied by a human."
+    },
+    "citation_support_rationale": {
+      "type": ["string", "null"],
+      "description": "Reviewer's rationale for citation_support_label. EMPTY until supplied by a human."
+    },
+    "abstention_assessment": {
+      "type": ["string", "null"],
+      "enum": ["appropriate_abstention", "inappropriate_abstention", "uncertain", "not_applicable", null],
+      "description": "Dimension F, question-level, for abstention_question items only: was abstention appropriate given the corpus? inappropriate = answer-bearing evidence was present in the retrieved/corpus text. not_applicable on claim items. EMPTY until supplied by a human."
+    },
+    "reviewer_id": {
+      "type": ["string", "null"],
+      "description": "Identifier of the human reviewer, ONLY if the reviewer supplies one (e.g. 'reviewer-1'). Never invented by tooling. Null = anonymous review."
+    },
+    "review_timestamp": {
+      "type": ["string", "null"],
+      "format": "date-time",
+      "description": "UTC ISO-8601 timestamp of when the human actually supplied the judgment. Written only by the review-collection step when real annotations arrive; null in the initial queue."
+    },
+    "review_status": {
+      "type": "string",
+      "enum": ["not_reviewed", "in_review", "reviewed", "needs_adjudication", "adjudicated", "deferred_out_of_scope"],
+      "description": "Workflow state. All d1 records start as not_reviewed. needs_adjudication is set when a second reviewer disagrees; adjudicated when an adjudicator has recorded adjudicated_label."
+    },
+    "uncertainty_notes": {
+      "type": ["string", "null"],
+      "description": "Reviewer's uncertainty, disagreement, or caveats (e.g. 'compound claim: second clause unverifiable', 'chunk boundary artifact'). Also records deliberate blinding waivers. EMPTY until supplied by a human."
+    },
+    "adjudicated_label": {
+      "type": ["string", "null"],
+      "enum": ["supported", "contradicted", "insufficient_evidence", "unverifiable", "not_applicable", "unresolved", null],
+      "description": "Final label after adjudication of a reviewer disagreement. EMPTY unless adjudication actually occurred. 'unresolved' records an honest failure to adjudicate; it is not a correctness claim."
+    },
+    "adjudication_rationale": {
+      "type": ["string", "null"],
+      "description": "Adjudicator's rationale. EMPTY unless adjudication occurred."
+    },
+    "item_priority": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 5,
+      "description": "Review priority tier: 1=retracted claims, 2=surviving supported claims, 3=abstention questions, 4=stratified unchanged sample, 5=pre-existing anomaly / other anomalies."
+    },
+    "source_artifact_refs": {
+      "type": "object",
+      "required": ["claim_row_source", "run_db_sha256"],
+      "properties": {
+        "claim_row_source": {
+          "type": "string",
+          "description": "Stable reference to the originating row, e.g. 'runs/eval-postgate22-20261016-141416/evidencegraph-eval.db :: verif_claims.id=37 (verified arm)'."
+        },
+        "run_db_sha256": {
+          "type": "string",
+          "description": "SHA-256 of the source run database at queue-generation time, pinning the exact bytes reviewed."
+        },
+        "paired_baseline_answer_ref": {
+          "type": ["string", "null"],
+          "description": "Reference to the baseline-arm answer for the same question (paired structure), e.g. 'eval_results.id=5 (baseline)'."
+        },
+        "historical_claim_ref": {
+          "type": ["string", "null"],
+          "description": "For retracted claims: reference to the historical pre-gate row that retained the original citations, e.g. 'runs/eval-pilot22-20261014-181354/evidencegraph-eval.db :: verif_claims.id=12'."
+        }
+      }
+    }
+  }
+}

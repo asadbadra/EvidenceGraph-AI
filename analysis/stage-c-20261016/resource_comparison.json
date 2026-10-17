@@ -1,0 +1,43 @@
+{
+  "historical": {
+    "calls_total": 100,
+    "calls_failed": 0,
+    "calls_by_arm_schema_note": "'verified' arm combines answer generation (22) + judging (56) = 78; per-purpose split not recorded by the historical script",
+    "calls_by_arm": {
+      "baseline": 22,
+      "verified_incl_judge": 78
+    },
+    "elapsed_s": 1660.0,
+    "tokens": {
+      "input": 122924,
+      "output": 8683,
+      "total": 131607,
+      "records_with_usage": 100,
+      "source": "provider-reported (UsageAwareOpenAIClient in one-off script)"
+    },
+    "cost_usd": null,
+    "cost_note": "0/22 calls priceable: no per-token pricing configured"
+  },
+  "post_gate": {
+    "calls_total": 100,
+    "calls_failed": 0,
+    "calls_by_purpose": {
+      "baseline_generation": 22,
+      "verified_generation": 22,
+      "judge": 56
+    },
+    "elapsed_s": 2097.8,
+    "tokens": {
+      "input": null,
+      "output": null,
+      "total": null,
+      "records_with_usage": 0,
+      "records_without_usage": 100,
+      "source": "UNAVAILABLE - tracked runner uses OpenAICompatibleClient which discards the response usage block (app/verification/runner.py::_make_llm_for_run). Recorded as unavailable, never zero."
+    },
+    "cost_usd": null,
+    "cost_note": "0/100 calls priceable: no per-token pricing configured"
+  },
+  "explicitly_not_inferred": "Post-gate token counts must NOT be estimated from the historical run: different run, no measurement exists.",
+  "per_question_latency": "not stored by either run; per-call latency not persisted"
+}

@@ -1,0 +1,52 @@
+{
+  "source_db": {
+    "path": "data\\evidencegraph.db",
+    "sha256": "0b9cacbac61f99d79bf01d6dcea67084bb298e9b8340b6f66562f14e558fe9c1",
+    "unchanged": true
+  },
+  "questions": {
+    "path": "data\\sample\\eval_questions.json",
+    "sha256": "500ed32d5546683392616685f024d9f5feebefec19806c53e1f03a34b33f3a3a",
+    "unchanged": true
+  },
+  "hist_run_db": {
+    "path": "runs\\eval-pilot22-20261014-181354\\evidencegraph-eval.db",
+    "sha256": "71e4a78703c2ae38d83e8ee9cf898b8c9e8aeb0c472245217093c01e31fb35ef",
+    "unchanged": true
+  },
+  "hist_report": {
+    "path": "runs\\eval-pilot22-20261014-181354\\report.json",
+    "sha256": "5247890849614a9516f84a0fcdc0b55fc0a2c9ca58879197fec4e0ad8d4267e1",
+    "unchanged": true
+  },
+  "new_run_db": {
+    "path": "runs\\eval-postgate22-20261016-141416\\evidencegraph-eval.db",
+    "sha256": "ed3c4f0d2ee713dd784fefac6378daa015091ce3890d9317265d41c763863d59",
+    "unchanged": true
+  },
+  "new_manifest": {
+    "path": "runs\\eval-postgate22-20261016-141416\\manifest.json",
+    "sha256": "c080638f72953297c049ed57a33f02af4e01512c9d533b06540ab835f388eff5",
+    "unchanged": true
+  },
+  "new_report": {
+    "path": "runs\\eval-postgate22-20261016-141416\\report.json",
+    "sha256": "e8380401f2c15231f65048dc2bfe17d5e9e2a195e8ebe8636eeac82131f2a93a",
+    "unchanged": true
+  },
+  "judge_py": {
+    "path": "app\\verification\\judge.py",
+    "sha256": "27e296eb7631e555472b9892e0e0954886e6a14e5b443d1029af0ad0166bc459",
+    "unchanged": true
+  },
+  "claims_py": {
+    "path": "app\\verification\\claims.py",
+    "sha256": "4e86577be494719777db50e15f9904479aaea4ed59974b4aaf5c968b9353b94c",
+    "unchanged": true
+  },
+  "prompts_py": {
+    "path": "app\\llm\\prompts.py",
+    "sha256": "2ce63c84586e2288c566ddbaba881ed3b55d3db3353beab2d6538dd987751eb7",
+    "unchanged": true
+  }
+}

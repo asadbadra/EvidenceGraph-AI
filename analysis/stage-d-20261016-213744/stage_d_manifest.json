@@ -1,0 +1,88 @@
+{
+  "stage": "D",
+  "dataset_version": "d1",
+  "schema_version": "1.0.0",
+  "generated_at_utc": "2026-10-16T16:54:15.114529+00:00",
+  "generator": {
+    "script": "analysis/stage-d-20261016-213744/build_review_queue.py",
+    "python_stdlib_only_plus": "app.retrieval.bm25.BM25Index (deterministic, offline)"
+  },
+  "source_runs": [
+    {
+      "run_id": "eval-postgate22-20261016-141416",
+      "db_path": "runs/eval-postgate22-20261016-141416/evidencegraph-eval.db",
+      "db_sha256": "ed3c4f0d2ee713dd784fefac6378daa015091ce3890d9317265d41c763863d59",
+      "report_path": "runs/eval-postgate22-20261016-141416/report.json",
+      "role": "primary queue source (claims, answers, chunks, verdicts)"
+    },
+    {
+      "run_id": "eval-pilot22-20261014-181354",
+      "db_path": "runs/eval-pilot22-20261014-181354/evidencegraph-eval.db",
+      "db_sha256": "71e4a78703c2ae38d83e8ee9cf898b8c9e8aeb0c472245217093c01e31fb35ef",
+      "role": "cross-validation of recovered citations for retracted claims (13/13 asserted); AI-draft label carrier"
+    }
+  ],
+  "source_files": {
+    "questions": {
+      "path": "data/sample/eval_questions.json",
+      "sha256": "500ed32d5546683392616685f024d9f5feebefec19806c53e1f03a34b33f3a3a"
+    },
+    "ai_draft_review_file": {
+      "path": "runs/eval-pilot22-20261014-181354/human_claim_review56.md",
+      "sha256": "86787635c4ba04a03ebfe52c9bc1d1e90397826740049470e0cc12c6700ae947",
+      "provenance": "ai_generated_draft (stage_d_provenance_audit.md section 1)",
+      "used_as": "proposed_ai_label secondary view only"
+    },
+    "mini_review_file": {
+      "path": "runs/eval-mini-20261014-165641/human_claim_review.md",
+      "sha256": "f3522f9e34e1647ecfff441faf8b0791952f77a2a794071c8750e6a3ebfe0bc7",
+      "provenance": "provenance_unknown (stage_d_provenance_audit.md section 2)",
+      "used_as": "nothing — excluded from the queue entirely"
+    },
+    "protected_source_db": {
+      "path": "data/evidencegraph.db",
+      "sha256": "0b9cacbac61f99d79bf01d6dcea67084bb298e9b8340b6f66562f14e558fe9c1"
+    }
+  },
+  "git": {
+    "commit": "d4ea26db3e27b9bd002c27d157ac5c773be3b800",
+    "branch": "master",
+    "tracked_files_modified_or_added": [],
+    "working_tree_clean_for_tracked_files": true,
+    "note": "Untracked analysis/ directories are expected; only tracked-file state is reported as dirty."
+  },
+  "queue_composition": {
+    "total_items": 46,
+    "by_priority_tier": {
+      "1_gate_retracted_claims": 13,
+      "2_surviving_supported_claims": 11,
+      "3_zero_claim_abstention_questions": 6,
+      "4_stratified_unchanged_sample": 16,
+      "5_pre_existing_rule_anomaly": 0
+    },
+    "tier4_sampling_rule": "within each unchanged stratum (insufficient_evidence n=16, unverifiable n=16): sort by post-gate verif_claims.id, take every 2nd claim -> 8 per stratum, 16 total; deterministic, no randomness",
+    "retrieval_reconstruction": "deterministic BM25 replay over the post-gate DB copy; validated 22/22 against stored retrieved_count",
+    "retracted_citations_recovery": "gate anomaly-note ids == historical evidence_ids_json for 13/13 (asserted at generation); post-gate store is empty by design",
+    "tier5_note": "the pre-existing rule anomaly (wrong-02 claim_index 0) already fell inside the tier-4 systematic sample, so tier 5 is 0 and the item is queued once at priority 4; coverage assertions verify it is present"
+  },
+  "honesty_statements": {
+    "no_model_calls": "TRUE: this queue was generated without any LLM/API call. Only SQLite reads, file reads, deterministic BM25, and regex parsing.",
+    "no_invented_human_labels": "TRUE: every human_label/rationale/reviewer_id/timestamp/adjudicated_label field is null in every item; review_status is not_reviewed for all 47 items. No default label of any kind exists.",
+    "ai_labels_not_human": "TRUE: proposed_ai_label values come from a self-declared AI-assisted draft and are marked non-ground-truth; they are excluded from the blind file and from all agreement/accuracy statistics.",
+    "no_gold_label_writes": "TRUE: gold_label columns remain NULL in both run databases; this stage writes nothing to any database."
+  },
+  "outputs": [
+    "stage_d_provenance_audit.md",
+    "annotation_schema.json",
+    "annotation_data_dictionary.md",
+    "human_annotation_guidelines.md",
+    "human_review_queue.csv",
+    "human_review_queue.json",
+    "human_review_queue_blind.csv",
+    "stage_d_protocol.md",
+    "stage_d_manifest.json",
+    "build_review_queue.py",
+    "validate_stage_d.py",
+    "stage_d_validation_report.md"
+  ]
+}

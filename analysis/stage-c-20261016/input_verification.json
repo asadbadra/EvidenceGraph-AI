@@ -1,0 +1,111 @@
+{
+  "hist_question_ids_count": 22,
+  "new_question_ids_count": 22,
+  "id_sets_identical": true,
+  "manifest_matches_db_ids": true,
+  "excluded_from_24": true,
+  "hist_report_vs_db": {
+    "supported": true,
+    "contradicted": true,
+    "insufficient_evidence": true,
+    "unverifiable": true,
+    "claims_total": true
+  },
+  "new_report_vs_db": {
+    "supported": true,
+    "contradicted": true,
+    "insufficient_evidence": true,
+    "unverifiable": true,
+    "claims_total": true
+  },
+  "hist_tally_from_db": {
+    "supported": 24,
+    "contradicted": 0,
+    "insufficient_evidence": 16,
+    "unverifiable": 16,
+    "total": 56
+  },
+  "new_tally_from_db": {
+    "supported": 11,
+    "contradicted": 0,
+    "insufficient_evidence": 29,
+    "unverifiable": 16,
+    "total": 56
+  },
+  "hist_missing_git_provenance": true,
+  "hist_conditions": {
+    "corpus_tag": "kev5-disposable-copy",
+    "db_copy": "evidencegraph-eval.db",
+    "db_copy_sha256": "71e4a78703c2ae38d83e8ee9cf898b8c9e8aeb0c472245217093c01e31fb35ef",
+    "real_db_sha256_before": "b85a95e533857a935e080a0e9402ab30c34860d3b8d3b39a0013e3c067e8150e",
+    "real_db_sha256_after": "b85a95e533857a935e080a0e9402ab30c34860d3b8d3b39a0013e3c067e8150e",
+    "real_db_unchanged": true,
+    "model": "llama3.2:latest",
+    "provider": "openai-compatible local Ollama",
+    "base_url": "http://localhost:11434/v1",
+    "temperature": 0.0,
+    "max_tokens": 700,
+    "top_k": 4,
+    "prompt_version": "baseline-v1",
+    "judge": "LLMJudge",
+    "question_count": 22,
+    "excluded_questions": [
+      "direct-02",
+      "wrong-04"
+    ],
+    "call_cap": 200
+  },
+  "new_git": {
+    "commit": "d4ea26db3e27b9bd002c27d157ac5c773be3b800",
+    "dirty": false,
+    "error": null
+  },
+  "new_provider": {
+    "name": "openai",
+    "model": "llama3.2:latest",
+    "base_url": "http://localhost:11434/v1",
+    "is_mock": false,
+    "remote_endpoint_allowed": false
+  },
+  "new_configuration": {
+    "temperature": 0.0,
+    "max_tokens": 700,
+    "timeout_seconds": 60.0,
+    "retrieval_top_k": 4,
+    "judge": "llm",
+    "judge_class": "LLMJudge",
+    "prompt_version": "baseline-v1",
+    "judge_prompt_version": "judge-v1",
+    "question_ids": [
+      "direct-01",
+      "direct-03",
+      "direct-04",
+      "hop-01",
+      "hop-02",
+      "hop-03",
+      "hop-04",
+      "absent-01",
+      "absent-02",
+      "absent-03",
+      "absent-04",
+      "plausible-01",
+      "plausible-02",
+      "plausible-03",
+      "plausible-04",
+      "wrong-01",
+      "wrong-02",
+      "wrong-03",
+      "opinion-01",
+      "opinion-02",
+      "opinion-03",
+      "opinion-04"
+    ],
+    "question_count": 22,
+    "notes": "Stage B: post-gate run with the tracked runner at commit d4ea26d (llama3.2:latest, local Ollama, temperature 0.0, max_tokens 700, top_k 4, LLMJudge). Comparison point, not identical replication, of historical eval-pilot22-20261014-181354 (pre-gate code, no recorded commit)."
+  },
+  "gold_labels_nonnull_new": 0,
+  "report_status": {
+    "hist": "completed",
+    "new": "completed"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "stage": "E1",
+  "purpose": "derived reviewer labels + annotation-quality report (read-only inputs)",
+  "created_utc": "2026-10-17T15:57:34+00:00",
+  "inputs": [
+    {
+      "path": "analysis\\stage-d3-20261017-011614\\d3_review_decisions.csv",
+      "sha256": "488ecb1497e7bbfae98f11a840495208e6e7e56b42aa6b987f78490049520b8e"
+    },
+    {
+      "path": "analysis\\stage-d-20261016-213744\\human_review_queue.json",
+      "sha256": "cce025ccac270fd85a192ac680f8ac6a4d612bc01ec71ccb9cc273c44898e769"
+    },
+    {
+      "path": "analysis\\stage-c-20261016\\retracted_claims_13.csv",
+      "sha256": "51a9e667dfb024b4e864e79ddce247545a1ca9fb86ec139bb799a09374fdd185"
+    },
+    {
+      "path": "analysis\\stage-c-20261016\\supported_claims_11.csv",
+      "sha256": "c5c2c426175e02dc940eebce2656477abec35048ae94e979369981d65af2e6e7"
+    },
+    {
+      "path": "analysis\\stage-c-20261016\\abstention_analysis.json",
+      "sha256": "2f4ccc5f5a17ec885a4c4c34d3bdafe7d5ad0294dd2d45a9b3a41588634f5e0e"
+    },
+    {
+      "path": "data\\sample\\eval_questions.json",
+      "sha256": "500ed32d5546683392616685f024d9f5feebefec19806c53e1f03a34b33f3a3a"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "derived_reviewer_labels.csv",
+      "sha256": "d567ec9b50190b10b3e7ca1adfc79638ef1e3bcb3dd99256b595aaf6dddafd71"
+    },
+    {
+      "path": "annotation_quality_report.md",
+      "sha256": "ea9ab58eeb722139f8341cb3b6d787780ceb1fa67f5b824fd932ef0813ecfad5"
+    }
+  ],
+  "parsing_counts": {
+    "parsed_prefix": 5,
+    "derived_scope_mapping": 1,
+    "accepted_proposal": 40
+  },
+  "exclusions": {
+    "count": 1,
+    "ids": [
+      "ann-d1-0033"
+    ],
+    "reason": "unresolved label/rationale inconsistency (D3 decision note section 8); excluded from label-based metrics until the reviewer resolves it"
+  },
+  "gold_label_written": false,
+  "source_csv_written": false
+}

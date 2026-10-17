@@ -1,0 +1,59 @@
+{
+  "stage": "E2-repetitions",
+  "created_utc": "2026-10-17T17:38:30+00:00",
+  "inputs": [
+    {
+      "path": "runs\\stage-e-repeat1-20261017-155403\\manifest.json",
+      "sha256": "8526a8d8cf98790fe376ece9eead04fd4484bedb262d4757cacb05f7af944964"
+    },
+    {
+      "path": "runs\\stage-e-repeat2-20261017-163026\\manifest.json",
+      "sha256": "5a38272b838d678934bdccb126cd7f21a1b868ba5f53c5611c860fe3fa57a63c"
+    },
+    {
+      "path": "runs\\stage-e-repeat3-20261017-170438\\manifest.json",
+      "sha256": "50bdc1fb6c3101efeb060a3cd56c3310fac8891168875a07499bd1d7f229c4f7"
+    },
+    {
+      "path": "runs\\stage-e-repeat1-20261017-155403\\report.json",
+      "sha256": "f0042513ffc372e6eb0d0ea7ca12b8e9e921d57f7d061d26f7380162d33ab28e"
+    },
+    {
+      "path": "runs\\stage-e-repeat2-20261017-163026\\report.json",
+      "sha256": "d592846648f6833fafab1014db1c7d6d124518bec14af5412ea3c0d93a1d3330"
+    },
+    {
+      "path": "runs\\stage-e-repeat3-20261017-170438\\report.json",
+      "sha256": "dca17b78b529ae68c80854f078b0cc88df71316b6b6eab329b2f0401b935650d"
+    },
+    {
+      "path": "runs\\stage-e-repeat1-20261017-155403\\evidencegraph-eval.db",
+      "sha256": "08bd2c727cc161e553e0694deda1626be726b2e3807b6997d61bbdfb57fa355d"
+    },
+    {
+      "path": "runs\\stage-e-repeat2-20261017-163026\\evidencegraph-eval.db",
+      "sha256": "37d1a1dc24ce91046048263133443ece28ad0ad844d09d26a4c6dd86c57561a7"
+    },
+    {
+      "path": "runs\\stage-e-repeat3-20261017-170438\\evidencegraph-eval.db",
+      "sha256": "c288647b94204b1e19bb046a28937854fce4cebc68bbdb74dcc1ffc8e1511710"
+    },
+    {
+      "path": "data\\sample\\eval_questions.json",
+      "sha256": "500ed32d5546683392616685f024d9f5feebefec19806c53e1f03a34b33f3a3a"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "repetition_results.json",
+      "sha256": "47c2eac862f5d83f00dd1c5b2f9283db59351f451e5da544c71c4d898f665f2b"
+    },
+    {
+      "path": "repetition_report.md",
+      "sha256": "f091e582e24cfc4683a26c141ebd7537272b058911fd492ce0902bdd8a1fd799"
+    }
+  ],
+  "gold_label_written": false,
+  "source_db_written": false,
+  "model_calls_made": false
+}

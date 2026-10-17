@@ -1,0 +1,15 @@
+question_id,claim_index,new_label,hist_label,anomaly_class,notes,hist_anomaly_same_claim
+direct-03,0,insufficient_evidence,supported,grounding_gate_retraction,"judge 'supported' with evidence ids [1, 2, 5] lacked textual grounding (0.11 < 0.50); downgraded to 'insufficient_evidence'",[]
+direct-04,0,insufficient_evidence,supported,grounding_gate_retraction,judge 'supported' with evidence ids [2] lacked textual grounding (0.25 < 0.50); downgraded to 'insufficient_evidence',[]
+direct-04,1,insufficient_evidence,supported,grounding_gate_retraction,"judge 'supported' with evidence ids [1, 2] lacked textual grounding (0.45 < 0.50); downgraded to 'insufficient_evidence'",[]
+hop-03,0,insufficient_evidence,supported,grounding_gate_retraction,"judge 'supported' with evidence ids [1, 6] lacked textual grounding (0.42 < 0.50); downgraded to 'insufficient_evidence'",[]
+opinion-01,1,insufficient_evidence,supported,grounding_gate_retraction,"judge 'supported' with evidence ids [1, 2, 3] lacked textual grounding (0.00 < 0.50); downgraded to 'insufficient_evidence'",[]
+opinion-01,2,insufficient_evidence,supported,grounding_gate_retraction,"judge 'supported' with evidence ids [1, 2, 3, 4, 5] lacked textual grounding (0.47 < 0.50); downgraded to 'insufficient_evidence'",[]
+opinion-01,3,insufficient_evidence,supported,grounding_gate_retraction,"judge 'supported' with evidence ids [6, 1, 4, 3, 2] lacked textual grounding (0.44 < 0.50); downgraded to 'insufficient_evidence'",[]
+opinion-01,9,insufficient_evidence,supported,grounding_gate_retraction,"judge 'supported' with evidence ids [1, 3, 4] lacked textual grounding (0.40 < 0.50); downgraded to 'insufficient_evidence'",[]
+opinion-03,1,insufficient_evidence,supported,grounding_gate_retraction,"judge 'supported' with evidence ids [4, 3] lacked textual grounding (0.18 < 0.50); downgraded to 'insufficient_evidence'",[]
+opinion-03,3,insufficient_evidence,supported,grounding_gate_retraction,"judge 'supported' with evidence ids [3, 4, 2, 1, 6, 5] lacked textual grounding (0.41 < 0.50); downgraded to 'insufficient_evidence'",[]
+opinion-04,3,insufficient_evidence,supported,grounding_gate_retraction,"judge 'supported' with evidence ids [2, 4] lacked textual grounding (0.38 < 0.50); downgraded to 'insufficient_evidence'",[]
+wrong-01,2,insufficient_evidence,supported,grounding_gate_retraction,"judge 'supported' with evidence ids [4, 3] lacked textual grounding (0.00 < 0.50); downgraded to 'insufficient_evidence'",[]
+wrong-02,0,unverifiable,unverifiable,pre_existing_supported_requires_evidence_rule,"label 'supported' requires evidence, none remained; downgraded to 'unverifiable'","[""label 'supported' requires evidence, none remained; downgraded to 'unverifiable'""]"
+wrong-02,4,insufficient_evidence,supported,grounding_gate_retraction,"judge 'supported' with evidence ids [3, 4] lacked textual grounding (0.00 < 0.50); downgraded to 'insufficient_evidence'",[]

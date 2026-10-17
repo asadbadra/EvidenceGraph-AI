@@ -1,0 +1,563 @@
+{
+  "stage": "E-final-publication",
+  "created_utc": "2026-10-17T19:10:34+00:00",
+  "git_state": {
+    "branch": "master",
+    "head": "d4ea26d",
+    "origin_master": "b370fa4",
+    "ahead_by": 1,
+    "note": "a push publishes the pre-existing commit d4ea26d as well as any new commits"
+  },
+  "counts": {
+    "A_preexisting_commit_files": 5,
+    "B_new_code_tests": 2,
+    "C_research_analysis": 90,
+    "D_sanitized": 1,
+    "E_excluded_entries": 6
+  },
+  "A_preexisting_local_commit": {
+    "commit": "d4ea26d",
+    "message": "Add reproducible evaluation runner and dependency constraints",
+    "files": [
+      {
+        "path": "README.md",
+        "git_blob": "cdfefc6e0f069885b32f9ccde17ef854f7f05736",
+        "action": "publishes on push (pre-existing commit, nothing to stage)"
+      },
+      {
+        "path": "app/verification/runner.py",
+        "git_blob": "39588fdedbadf767221c390f021555bd5a38e33b",
+        "action": "publishes on push (pre-existing commit, nothing to stage)"
+      },
+      {
+        "path": "constraints.txt",
+        "git_blob": "d44d4b4dfddb9d3eda8564fa257d7a33d0f537de",
+        "action": "publishes on push (pre-existing commit, nothing to stage)"
+      },
+      {
+        "path": "pyproject.toml",
+        "git_blob": "e7ac9f4c07d3a0be636b588caa588470af95790d",
+        "action": "publishes on push (pre-existing commit, nothing to stage)"
+      },
+      {
+        "path": "tests/test_runner.py",
+        "git_blob": "9684f527d3690468bdf18fdd09c355acfca9d93a",
+        "action": "publishes on push (pre-existing commit, nothing to stage)"
+      }
+    ]
+  },
+  "B_new_code_and_tests": [
+    {
+      "path": "app/verification/experiments.py",
+      "sha256": "9c541b17fbdff2d811e8fd9a12259e2963c3bcdf5bdb3ba4b90d5fd5a7498443",
+      "action": "new code/test file (commit group 2)"
+    },
+    {
+      "path": "tests/test_experiments.py",
+      "sha256": "7f4fbaad48df3ed775dead9a4f010afc42e91af9fb973718a59d2024790b99a4",
+      "action": "new code/test file (commit group 2)"
+    }
+  ],
+  "C_research_analysis_and_validation": [
+    {
+      "path": "analysis/stage-c-20261016/abstention_analysis.json",
+      "sha256": "2f4ccc5f5a17ec885a4c4c34d3bdafe7d5ad0294dd2d45a9b3a41588634f5e0e",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-c-20261016/analyze_stage_c.py",
+      "sha256": "bf476ba32dc7e3fa17d5e5d92f58ba95e5584587256b0944b5e4b7076b182d4c",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-c-20261016/anomaly_analysis.csv",
+      "sha256": "96a7de9e831f3c88080daa8c2906c32f4726f1681244886ac88cc0cad6d2f9c4",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-c-20261016/citation_comparison.json",
+      "sha256": "a4fb1f56fc09396e35b2084c98423a51f76c33795998050b889f9fa1e3d67d14",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-c-20261016/claim_transition_matrix.csv",
+      "sha256": "0b9aad96dcdf1d3edfcefefcab43331576397ecdba4d31d284999b06c14dedea",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-c-20261016/input_verification.json",
+      "sha256": "f9486cd3582027f976129166f84664a05f49b1507b849233fa299fdb4aa90c22",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-c-20261016/integrity_hashes_after.json",
+      "sha256": "e92381cb366cefc2b55bb313737d8bbfb1cc3aad357ceac5c71a713b4d42ba29",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-c-20261016/integrity_hashes_before.json",
+      "sha256": "d4f82631cfc89cd904913a37e05b4fee34a262ec10c4b847f8e32bc12e42affa",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-c-20261016/question_level_comparison.csv",
+      "sha256": "90f90c3688b7cfb393be2e18f3b9f5c5f105af54a508cff3cddef6cb6e077414",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-c-20261016/resource_comparison.json",
+      "sha256": "2ca2f0c49975912d0fc31c68ab5c21cd3ae5336e0f68c0b37e56179e5d1b0018",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-c-20261016/retracted_claims_13.csv",
+      "sha256": "51a9e667dfb024b4e864e79ddce247545a1ca9fb86ec139bb799a09374fdd185",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-c-20261016/stage_c_report.md",
+      "sha256": "7cb3c3fa4348d15c289eeaad913cdad5671ce2cb47d1117f6766d4df28f818f3",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-c-20261016/supported_claims_11.csv",
+      "sha256": "c5c2c426175e02dc940eebce2656477abec35048ae94e979369981d65af2e6e7",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/annotation_data_dictionary.md",
+      "sha256": "a70fb67ecd023cd4a4b6f19b31e54b3e3e352c7345d29dbf91e1671aeb9f2b63",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/annotation_schema.json",
+      "sha256": "f82a016c41188ee0f96c67297874cef92cf746ffb5b80c223509fe3bb89040d6",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/build_review_queue.py",
+      "sha256": "145bb92d875a0120dd94530e8637973efb2822fb5dba8b445a49d5d9d3c8479c",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/human_annotation_guidelines.md",
+      "sha256": "7ec6008d2d863e0f1654845129125a10624c4cb88cda314466c62d965162bde1",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/human_review_queue.csv",
+      "sha256": "14ded2ef77c809afbdc3a06c658e6707683f5a33649366a52f8ef501004bc293",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/human_review_queue.json",
+      "sha256": "cce025ccac270fd85a192ac680f8ac6a4d612bc01ec71ccb9cc273c44898e769",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/human_review_queue_blind.csv",
+      "sha256": "6ca7f6adb9b9e9f99297d3ca47a441c201bbc84945a243bc5f8687515af8c3df",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/stage_d_manifest.json",
+      "sha256": "63fcf46ad7ebe88bbc1529be00aac47a883e72981551405d771faa2424389848",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/stage_d_protocol.md",
+      "sha256": "4bea46f05783f016c3d4d1b87203dea79f1ebf13f04fa1c608bc8ed808dda702",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/stage_d_provenance_audit.md",
+      "sha256": "60651e66422b04d16f654685a67a4bd4dd4b9af6aaf21a98f73708f2eb43479a",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/stage_d_validation_report.md",
+      "sha256": "64bfa8cb31c984fe30645631ba340c31fe58d1507eb172c81d0eb953f25b99c2",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/validate_stage_d.py",
+      "sha256": "485ef5158fcf764773a659c1cbbc0de5874b668f5263da839d11b0ba926a65e8",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/build_workspace.py",
+      "sha256": "da80544155d249ac308dc97edf4f423fd10dd404456ab3adb017d72e132322d2",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/d1_proposed_judgments.json",
+      "sha256": "32fdc9a373d76ccc78cbbb8af945dd5303822127b767d827842b91d53cba709a",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/proposed_judgments.csv",
+      "sha256": "8a0f115571aa12a99d16a2fbdbfe83c81bd4d5deabf8db111c33ed5268d72753",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/review_confirmation_sheet.md",
+      "sha256": "c050774b60c40ccb24dc7b3a1390c8af80c85e8214d4020f561fd18f4ba9528b",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/review_progress.md",
+      "sha256": "44cce7e697a16b2f5a6d8cd5a0c8890a836e4dc60ce3aa29aff2a2a87fb34052",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/review_workspace.csv",
+      "sha256": "063f516214685d6c5223055e8e39f428deb5280349b85faa519a4a23c71851a6",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/stage_d1_manifest.json",
+      "sha256": "171073814b9469ea4f4442d95df1bf627a63df0e2b934a57757268f3bc11ae7a",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/stage_d1_validation_report.md",
+      "sha256": "f67aead4c3c80c50745582bc979bfff5483748e83c958f3090c64f6557ccf85f",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/unresolved_evidence.md",
+      "sha256": "e1275e8a5d6f27a56830a8d7e3e0f90c6351f1ffcc2c60d6ae15b2066f7e53c9",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/validate_stage_d1.py",
+      "sha256": "1598af260eca653caadc45cbe44b36df4a7035acbc68769ad65e0400ffa235b5",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d2-20261017-002537/build_d2_interface.py",
+      "sha256": "81ee49bce5ef16b1c0de9d5fe6fed8fbe759a4296944facf96f247cff9d92ac7",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d2-20261017-002537/confirmation_decisions.csv",
+      "sha256": "530329c542a05c74b8a5ddfc39470d73d6d6a8da8ac8491374dcebb83a82bc7a",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d2-20261017-002537/review_summary.md",
+      "sha256": "3dd4e3dd7647939946f2ef97123930f8f6c10dbc6488c92614d9bef1b7ccdbf3",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d2-20261017-002537/stage_d2_manifest.json",
+      "sha256": "c7c060c12d78787c96865dcf407b7a33e2f2f771440448b621505e497f65bccf",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d2-20261017-002537/validate_stage_d2.py",
+      "sha256": "525c8310da35023c2e11adb77df66dc32ba65afcb48200450f746855bc56be10",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/audit_d3_0012_correction.py",
+      "sha256": "92d1bd083ad4052977ef433f65d7f31e1a89552fcd60fae03f83b800662ccc48",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/audit_d3_0014_update.py",
+      "sha256": "24c85a60838d55be5271938be21989f79d5686c7087a3bcb6855b78c08cea485",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/audit_d3_0017_update.py",
+      "sha256": "c394db95387aef9d46f537043eaf592b4d74bcf89c2376a3b333c702686087a2",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/audit_d3_0033_update.py",
+      "sha256": "719c3427d4f96ac92757b6a47858747ac08de12dc7b79b0d3d243e6064ef69b1",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/audit_d3_batch30_update.py",
+      "sha256": "67086f0368ce2d0b2d37fa35da2c97821baff6f49a56fa0c1ec7911b9ea8d5af",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/audit_d3_decisions.py",
+      "sha256": "f72b8825f4d908d67f56a62f122909ad005da074eb79f691b617cb8ead3b2804",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/audit_d3_final4_update.py",
+      "sha256": "153745678eec6d29ddc8742f268715c1c9ea3edbfd0734d503b9bd0bc162ebf8",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/build_d3_review.py",
+      "sha256": "773a1bd3b35be0c3fb1dfb019495202e1fd35bd653daa6645abaffff86c38bdc",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/d3_highest_risk_summary.md",
+      "sha256": "e106d2e223764189cd79f0ba542c68ee6bb22c438a626f934a080ff09d54b287",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/d3_review_cards.md",
+      "sha256": "4a9e888ba586d2c9325d465b81abad9e85b1538a2c3d4a94b864887d1d6c5739",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/d3_review_decisions.csv",
+      "sha256": "488ecb1497e7bbfae98f11a840495208e6e7e56b42aa6b987f78490049520b8e",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/d3_review_decisions_pre0012correction_snapshot.csv",
+      "sha256": "3ef6fae315634c970d259888c67c15f7d01f9184d23113e0d671884eb84ec5ad",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/d3_review_decisions_pre0014update_snapshot.csv",
+      "sha256": "303f7f609443a464f619ef423660e7481f9e115d11e512064a3d6ee970ef3451",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/d3_review_decisions_pre0017update_snapshot.csv",
+      "sha256": "31751232964d54fc720d050b0faba109691b030947127ce1765a584363e6a40f",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/d3_review_decisions_pre0033update_snapshot.csv",
+      "sha256": "dc013c26fc18580a813b45029916269278b2f6492980e6cbd07c88b181db9f13",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/d3_review_decisions_prebatch30update_snapshot.csv",
+      "sha256": "95ad984d4c7f37d1eeb01b76f5af2dbe4ee5866758534a316ee847821a22286e",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/d3_review_decisions_predecision_snapshot.csv",
+      "sha256": "65bd58ce3a79e66f4009cbc653cac2726ed38c48ed6c9c8174e1a6fa545d8ac5",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/d3_review_decisions_prefixhold4_snapshot.csv",
+      "sha256": "2ba3f58409db5714d67c8ac67a5b61cfab6ef80656b10608df8ce9c0f3d290da",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/d3_reviewer_decision_note.md",
+      "sha256": "476cb6871cc413d630a66114fbbe157ea8b925998895073c588307d7451c7ade",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/d3_validation_report.md",
+      "sha256": "c67da5c7fb239cff0defe5d5827e67a1195c02a945324a8878267d23aa7d458f",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/r1_explainer.md",
+      "sha256": "8c16d8d422cc7fddb78a924873fba0d8a688df6820a76584cca3127cd3e42c42",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/record_d3_0012_correction.py",
+      "sha256": "08aa05aa5788dabeb9eb1023ff136455f79ecc7d1a650d63276fd9762450cb4b",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/record_d3_0014_update.py",
+      "sha256": "6b14882efea9133a4351977be92eefed728a2ed02f1e7b463b3bbff4eda832b9",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/record_d3_0017_update.py",
+      "sha256": "34b992d6c5366bc42d902261273e106327f7adca38a0384fe8bf3a02b8e95b7a",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/record_d3_0033_update.py",
+      "sha256": "256f0c6bc3277b598bfc24d09a2cda65a6c9af87eda215374813249b87232027",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/record_d3_batch30_update.py",
+      "sha256": "fe8eb0fd55493122f013f996dd8cb146e013d77ededef6ee96f6b822937063a7",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/record_d3_decisions.py",
+      "sha256": "f4155a8a1d1059a31b8e45d9b2abfc9abc49cc323f1ab03f6800f861f5983d55",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/record_d3_final4_update.py",
+      "sha256": "ced8e9778389523399720837b290000c78fc60d8ea3103b8ff7bd900ccdd0486",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/stage_d3_manifest.json",
+      "sha256": "4539fe8e327793562169d4c83ec773cb725d9d2f32236ce5707013e21406dc33",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-20261017-011614/validate_stage_d3.py",
+      "sha256": "9680134a8d0790f1f7e8415ddd93293579e9a454767cc1692e31b643c0d05ea6",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-batch-review-20261017-150516/batch_review_approval_sheet.md",
+      "sha256": "6fd50d0095b4b0833bebd63ad521e1cd1a214a8c8a871a7db9df5afafa087a50",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-batch-review-20261017-150516/batch_review_decisions_proposal.csv",
+      "sha256": "d762bb8b4fcdc8cca2bedfa8ce764f1a1010cfa9138b485ce7077603d4504428",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-d3-batch-review-20261017-150516/batch_review_validation_report.md",
+      "sha256": "e09896775791e03878ec678a166d5155ca29f370f392f6d1a7e2a4b44289e080",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-e-final-20261017/build_publication_manifest.py",
+      "sha256": "748e02bc7d00cbd52cc0a4b2df4a6ce39365784f360785ef24040dec4ee723e2",
+      "action": "final publication package (commit group 3/4)"
+    },
+    {
+      "path": "analysis/stage-e-final-20261017/publication_manifest.json",
+      "sha256": null,
+      "note": "self-referential/generated after manifest build; existence verified, hash not pinned"
+    },
+    {
+      "path": "analysis/stage-e-final-20261017/publication_validation_report.md",
+      "sha256": null,
+      "note": "self-referential/generated after manifest build; existence verified, hash not pinned"
+    },
+    {
+      "path": "analysis/stage-e-final-20261017/stage_e_final_report.md",
+      "sha256": "a5f9120c92c019668473524a104742bf7b4f63db8b339b748f9f8c37386c2995",
+      "action": "final publication package (commit group 3/4)"
+    },
+    {
+      "path": "analysis/stage-e-final-20261017/validate_publication.py",
+      "sha256": "93ce44a919c80260d85eff6629811f9ff9c1f4edbee12671b59a3c7f9b625735",
+      "action": "final publication package (commit group 3/4)"
+    },
+    {
+      "path": "analysis/stage-e1-20261017-211414/annotation_quality_report.md",
+      "sha256": "ea9ab58eeb722139f8341cb3b6d787780ceb1fa67f5b824fd932ef0813ecfad5",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-e1-20261017-211414/build_stage_e1_analysis.py",
+      "sha256": "c92b870b05dd9c0aae541fd79331af376c853801336aee9d84b7fe66872083c4",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-e1-20261017-211414/derived_reviewer_labels.csv",
+      "sha256": "d567ec9b50190b10b3e7ca1adfc79638ef1e3bcb3dd99256b595aaf6dddafd71",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-e1-20261017-211414/stage_e1_manifest.json",
+      "sha256": "327406aaae94ae6a23af0b51d0e5d4a8ba0262e29627c7e7ff6df50fef9c867c",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-e1-20261017-211414/stage_e1_validation_report.md",
+      "sha256": "30efcdf2402d1db93e52b5ed33d6859fc7fcf894162bfd46a14e3a4bce1449bb",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-e1-20261017-211414/validate_stage_e1.py",
+      "sha256": "010a853cc6cfc0626a5f0ac850554f991dd2a066bc4c021a70c822ff34fe8e11",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-e2-repetition-analysis-20261017-214422/build_repetition_analysis.py",
+      "sha256": "5cd9aaad3caaf29c9079d87c9948c64ecb81f369ea5a7f546d1a94b2f596394e",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-e2-repetition-analysis-20261017-214422/repetition_report.md",
+      "sha256": "f091e582e24cfc4683a26c141ebd7537272b058911fd492ce0902bdd8a1fd799",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-e2-repetition-analysis-20261017-214422/repetition_results.json",
+      "sha256": "47c2eac862f5d83f00dd1c5b2f9283db59351f451e5da544c71c4d898f665f2b",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-e2-repetition-analysis-20261017-214422/stage_e2_manifest.json",
+      "sha256": "fce33d436cd5b58e60b304279311ff6274c96ed8522abd34330141b58a455695",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-e2-repetition-analysis-20261017-214422/stage_e2_validation_report.md",
+      "sha256": "ee84568449945c10266373f81d47ba796fe684fb23380160bcfa34235ebc9e32",
+      "action": "research analysis/validation artifact (commit group 3)"
+    },
+    {
+      "path": "analysis/stage-e2-repetition-analysis-20261017-214422/validate_repetition_analysis.py",
+      "sha256": "9a9fd69405307e9927c198d9559956b89da1b284a6dd4733c3bc2a14cfde7973",
+      "action": "research analysis/validation artifact (commit group 3)"
+    }
+  ],
+  "D_sanitized_publication_copies": [
+    {
+      "path": "analysis/stage-d2-20261017-002537/stage_d2_validation_report_sanitized.md",
+      "sha256": "263be6297fbf2373a419554435eff3f358f3304b1878baa8f02ea45bbf5d90b1",
+      "sanitized_from": "analysis/stage-d2-20261017-002537/stage_d2_validation_report.md",
+      "original_sha256": "06ffaaf13b1cfecc165807473a8561d70837328175870d5da31ea06e2d8a2cfa",
+      "change": "local absolute path on the Run line replaced by repository-relative path; header records provenance; no result altered",
+      "action": "publishes in commit group 3/4"
+    }
+  ],
+  "E_excluded_local_only": [
+    {
+      "path": "analysis/stage-d2-20261017-002537/stage_d2_validation_report.md",
+      "reason": "contains a local absolute path and username (line 3); retained locally unchanged as historical evidence; superseded for publication by stage_d2_validation_report_sanitized.md",
+      "retained_locally": true,
+      "sha256_local": "06ffaaf13b1cfecc165807473a8561d70837328175870d5da31ea06e2d8a2cfa"
+    },
+    {
+      "path_or_pattern": "runs/**",
+      "reason": "gitignored experimental run outputs (incl. the three Stage E repetitions and their eval databases); local provenance only",
+      "retained_locally": true
+    },
+    {
+      "path_or_pattern": "*.db / data/evidencegraph.db",
+      "reason": "local SQLite databases (corpus and disposable run copies); gitignored, never published",
+      "retained_locally": true
+    },
+    {
+      "path_or_pattern": ".env",
+      "reason": "secrets file (absent here; gitignored by policy); .env.example is already tracked",
+      "retained_locally": false
+    },
+    {
+      "path_or_pattern": "__pycache__/ .pytest_cache/ .coverage htmlcov/",
+      "reason": "caches and generated coverage data; gitignored",
+      "retained_locally": false
+    },
+    {
+      "path_or_pattern": "%TEMP%/opencode/*.py",
+      "reason": "temporary audit scripts outside the repository",
+      "retained_locally": true
+    }
+  ],
+  "authorization_boundary": {
+    "staged": false,
+    "committed": false,
+    "pushed": false,
+    "deployed": false,
+    "note": "this manifest is a proposal only; every git action awaits separate explicit authorization"
+  }
+}

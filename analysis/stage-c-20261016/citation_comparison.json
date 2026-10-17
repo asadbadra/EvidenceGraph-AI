@@ -1,0 +1,35 @@
+{
+  "historical": {
+    "baseline_citation_markers": 17,
+    "verified_citation_markers": 18,
+    "baseline_invalid_markers": 0,
+    "verified_invalid_markers": 0,
+    "invalid_marker_rate": 0.0,
+    "verified_citations_support_label": null,
+    "claims_with_citation_markers": 0,
+    "claims_total": 56,
+    "claims_with_judge_evidence_ids": 24,
+    "unavailable_fields": [
+      "verified_citations (per-citation support labels: null in report and absent from schema)",
+      "citation precision: NOT COMPUTABLE - no stored label says whether a marker supports its claim",
+      "claim-to-citation support rate: NOT COMPUTABLE for the same reason"
+    ]
+  },
+  "post_gate": {
+    "baseline_citation_markers": 17,
+    "verified_citation_markers": 18,
+    "baseline_invalid_markers": 0,
+    "verified_invalid_markers": 0,
+    "invalid_marker_rate": 0.0,
+    "verified_citations_support_label": null,
+    "claims_with_citation_markers": 0,
+    "claims_total": 56,
+    "claims_with_judge_evidence_ids": 11,
+    "unavailable_fields": [
+      "verified_citations (per-citation support labels: null in report and absent from schema)",
+      "citation precision: NOT COMPUTABLE - no stored label says whether a marker supports its claim",
+      "claim-to-citation support rate: NOT COMPUTABLE for the same reason"
+    ]
+  },
+  "note": "Only stored counts are reported. Citation precision and per-citation support require human labels that do not exist; neither report nor schema stores them. Do not read marker counts as support rates."
+}

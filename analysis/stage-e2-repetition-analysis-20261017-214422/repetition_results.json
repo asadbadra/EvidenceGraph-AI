@@ -1,0 +1,215 @@
+{
+  "stage": "E2-repetitions",
+  "created_utc": "2026-10-17T17:38:30+00:00",
+  "experiment": {
+    "labels": [
+      "stage-e-repeat1",
+      "stage-e-repeat2",
+      "stage-e-repeat3"
+    ],
+    "question_count": 24,
+    "judge": "llm",
+    "temperature": 0.0,
+    "max_tokens": 700,
+    "model": "llama3.2:latest",
+    "git_commit": "d4ea26db3e27b9bd002c27d157ac5c773be3b800"
+  },
+  "comparability": {
+    "pass": true,
+    "detail": "all comparability fields identical across repetitions"
+  },
+  "invariants": {
+    "stage-e-repeat1": {
+      "source_db_unchanged": true,
+      "source_sha_before": "0b9cacbac61f99d79bf01d6dcea67084bb298e9b8340b6f66562f14e558fe9c1",
+      "sha_matches_known_source": true,
+      "gold_labels_written": 0
+    },
+    "stage-e-repeat2": {
+      "source_db_unchanged": true,
+      "source_sha_before": "0b9cacbac61f99d79bf01d6dcea67084bb298e9b8340b6f66562f14e558fe9c1",
+      "sha_matches_known_source": true,
+      "gold_labels_written": 0
+    },
+    "stage-e-repeat3": {
+      "source_db_unchanged": true,
+      "source_sha_before": "0b9cacbac61f99d79bf01d6dcea67084bb298e9b8340b6f66562f14e558fe9c1",
+      "sha_matches_known_source": true,
+      "gold_labels_written": 0
+    }
+  },
+  "per_run": {
+    "stage-e-repeat1": {
+      "run_dir": "stage-e-repeat1-20261017-155403",
+      "run_id": "stage-e-repeat1-20261017-155403",
+      "status": "completed",
+      "elapsed_s": 1999.0,
+      "load_error": null,
+      "per_system": {
+        "baseline": {
+          "questions": 24,
+          "citations_total": 22,
+          "invalid_markers_total": 0,
+          "claims_total": 0,
+          "supported": 0,
+          "contradicted": 0,
+          "insufficient_evidence": 0,
+          "unverifiable": 0,
+          "with_anomalies": 0,
+          "claim_check_performed": false
+        },
+        "verified": {
+          "questions": 24,
+          "citations_total": 23,
+          "invalid_markers_total": 0,
+          "claims_total": 64,
+          "supported": 14,
+          "contradicted": 0,
+          "insufficient_evidence": 31,
+          "unverifiable": 19,
+          "with_anomalies": 16,
+          "claim_check_performed": true
+        }
+      }
+    },
+    "stage-e-repeat2": {
+      "run_dir": "stage-e-repeat2-20261017-163026",
+      "run_id": "stage-e-repeat2-20261017-163026",
+      "status": "completed",
+      "elapsed_s": 2011.7,
+      "load_error": null,
+      "per_system": {
+        "baseline": {
+          "questions": 24,
+          "citations_total": 22,
+          "invalid_markers_total": 0,
+          "claims_total": 0,
+          "supported": 0,
+          "contradicted": 0,
+          "insufficient_evidence": 0,
+          "unverifiable": 0,
+          "with_anomalies": 0,
+          "claim_check_performed": false
+        },
+        "verified": {
+          "questions": 24,
+          "citations_total": 23,
+          "invalid_markers_total": 0,
+          "claims_total": 64,
+          "supported": 14,
+          "contradicted": 0,
+          "insufficient_evidence": 31,
+          "unverifiable": 19,
+          "with_anomalies": 16,
+          "claim_check_performed": true
+        }
+      }
+    },
+    "stage-e-repeat3": {
+      "run_dir": "stage-e-repeat3-20261017-170438",
+      "run_id": "stage-e-repeat3-20261017-170438",
+      "status": "completed",
+      "elapsed_s": 1970.1,
+      "load_error": null,
+      "per_system": {
+        "baseline": {
+          "questions": 24,
+          "citations_total": 22,
+          "invalid_markers_total": 0,
+          "claims_total": 0,
+          "supported": 0,
+          "contradicted": 0,
+          "insufficient_evidence": 0,
+          "unverifiable": 0,
+          "with_anomalies": 0,
+          "claim_check_performed": false
+        },
+        "verified": {
+          "questions": 24,
+          "citations_total": 23,
+          "invalid_markers_total": 0,
+          "claims_total": 64,
+          "supported": 14,
+          "contradicted": 0,
+          "insufficient_evidence": 31,
+          "unverifiable": 19,
+          "with_anomalies": 16,
+          "claim_check_performed": true
+        }
+      }
+    }
+  },
+  "between_run_variability": {
+    "verified_claims_total_per_run": [
+      64,
+      64,
+      64
+    ],
+    "verified_claims_mean": 64,
+    "verified_claims_stdev": 0.0,
+    "verified_claims_range": [
+      64,
+      64
+    ]
+  },
+  "aggregate": {
+    "repetitions": 3,
+    "status_counts": {
+      "completed": 3
+    },
+    "all_completed": true,
+    "elapsed_s": {
+      "n": 3,
+      "mean": 1993.6,
+      "stdev": 21.319,
+      "min": 1970.1,
+      "max": 2011.7
+    },
+    "usage": {
+      "calls": 336,
+      "calls_ok": 336,
+      "calls_failed": 0,
+      "calls_by_purpose": {
+        "baseline_generation": 72,
+        "judge": 192,
+        "verified_generation": 72
+      },
+      "total_input_tokens": null,
+      "total_output_tokens": null,
+      "token_totals_available": false,
+      "repetitions_without_token_usage": 3
+    },
+    "scope_caveat": "Descriptive aggregate of small-N repetitions over one fixture; no significance, superiority, or generalization claim follows."
+  },
+  "stability": {
+    "repetitions": 3,
+    "units_total": 48,
+    "answer_identical_all_repetitions": 47,
+    "claim_labels_identical_all_repetitions": 48,
+    "answer_stability": 0.9792,
+    "differing": [
+      {
+        "key": [
+          "direct-01",
+          "baseline"
+        ],
+        "distinct_answers": 2,
+        "distinct_label_sequences": 1
+      }
+    ]
+  },
+  "known_discrepancies": [
+    "Repeat 1's free-text --notes says '22-question run matching eval-postgate22', but its machine-readable configuration (authoritative) ran all 24 fixture questions; repeats 2-3 carry corrected notes. Comparability is decided on machine fields only.",
+    "The historical eval-postgate22 ran a 22-question subset (excluded direct-02 and wrong-04) with git.dirty=false; it is excluded from strict comparability for that reason (and recorded here), not silently pooled."
+  ],
+  "excluded_runs": {
+    "eval-postgate22-20261016-141416": "pre-Stage-E reference run: git.dirty=false vs true (untracked analysis/ present during Stage E); excluded from strict comparability, not silently pooled",
+    "eval-20261017-155111": "mock-provider wiring smoke (1 question), not a repetition",
+    "eval-20261017-155226": "real-path smoke (1 question), not a repetition"
+  },
+  "token_usage_note": "Local Ollama reports no per-token usage: totals are null (unavailable), never estimated.",
+  "scope_caveats": [
+    "Reproducibility smoke signal for one fixture/model, not a generalizable stability figure.",
+    "No significance, superiority, or accuracy claim follows from these repetitions."
+  ]
+}

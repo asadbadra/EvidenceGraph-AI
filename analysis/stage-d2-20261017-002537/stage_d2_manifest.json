@@ -1,0 +1,93 @@
+{
+  "stage": "D2",
+  "purpose": "efficient reviewer assistance over D1 proposals (no labels decided)",
+  "schema_version": "1.0.0",
+  "source_inputs_read_only": [
+    {
+      "path": "analysis/stage-d-20261016-213744/human_review_queue.json",
+      "sha256": "cce025ccac270fd85a192ac680f8ac6a4d612bc01ec71ccb9cc273c44898e769"
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/human_annotation_guidelines.md",
+      "sha256": "7ec6008d2d863e0f1654845129125a10624c4cb88cda314466c62d965162bde1"
+    },
+    {
+      "path": "data/sample/eval_questions.json",
+      "sha256": "500ed32d5546683392616685f024d9f5feebefec19806c53e1f03a34b33f3a3a"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/proposed_judgments.csv",
+      "sha256": "8a0f115571aa12a99d16a2fbdbfe83c81bd4d5deabf8db111c33ed5268d72753"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/d1_proposed_judgments.json",
+      "sha256": "32fdc9a373d76ccc78cbbb8af945dd5303822127b767d827842b91d53cba709a"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/review_workspace.csv",
+      "sha256": "063f516214685d6c5223055e8e39f428deb5280349b85faa519a4a23c71851a6"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/review_confirmation_sheet.md",
+      "sha256": "c050774b60c40ccb24dc7b3a1390c8af80c85e8214d4020f561fd18f4ba9528b"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/unresolved_evidence.md",
+      "sha256": "e1275e8a5d6f27a56830a8d7e3e0f90c6351f1ffcc2c60d6ae15b2066f7e53c9"
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/stage_d1_manifest.json",
+      "sha256": "171073814b9469ea4f4442d95df1bf627a63df0e2b934a57757268f3bc11ae7a"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "analysis/stage-d2-20261017-002537/review_summary.md",
+      "sha256": "3dd4e3dd7647939946f2ef97123930f8f6c10dbc6488c92614d9bef1b7ccdbf3"
+    },
+    {
+      "path": "analysis/stage-d2-20261017-002537/confirmation_decisions.csv",
+      "sha256": "530329c542a05c74b8a5ddfc39470d73d6d6a8da8ac8491374dcebb83a82bc7a"
+    },
+    {
+      "path": "analysis/stage-d2-20261017-002537/build_d2_interface.py",
+      "sha256": "81ee49bce5ef16b1c0de9d5fe6fed8fbe759a4296944facf96f247cff9d92ac7"
+    },
+    {
+      "path": "analysis/stage-d2-20261017-002537/validate_stage_d2.py",
+      "sha256": "525c8310da35023c2e11adb77df66dc32ba65afcb48200450f746855bc56be10"
+    },
+    {
+      "path": "analysis/stage-d2-20261017-002537/stage_d2_validation_report.md",
+      "sha256": "06ffaaf13b1cfecc165807473a8561d70837328175870d5da31ea06e2d8a2cfa"
+    }
+  ],
+  "counts": {
+    "review_items": 46,
+    "gate_retracted": 13,
+    "surviving_supported": 11,
+    "abstentions": 6,
+    "stratified_unchanged": 16,
+    "draft_recommendations_accept": 45,
+    "draft_recommendations_needs_adjudication": 1,
+    "human_confirmed": 0,
+    "human_labels_created": 0
+  },
+  "validation": {
+    "checks": "20/20 PASS",
+    "report": "analysis/stage-d2-20261017-002537/stage_d2_validation_report.md",
+    "d1_manifest_hashes_reverified": 21,
+    "pytest": "763 passed"
+  },
+  "git": {
+    "head": "d4ea26d",
+    "state": "unchanged, nothing committed or pushed"
+  },
+  "honesty_statements": [
+    "No human judgment exists anywhere in this stage: every reviewer column was emitted empty.",
+    "draft_recommendation is machine guidance, not a decision; nothing was inferred as accepted.",
+    "Proposals were copied byte-for-byte from D1; D1 and all historical artifacts are hash-verified unchanged.",
+    "System verdicts were used only for the descriptive disagreement ledger; they are not ground truth.",
+    "The review is NOT complete: 46 items remain pending actual reviewer decisions."
+  ]
+}

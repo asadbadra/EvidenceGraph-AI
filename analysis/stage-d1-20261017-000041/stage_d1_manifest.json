@@ -1,0 +1,166 @@
+{
+  "stage": "D1",
+  "dataset_version": "d1",
+  "schema_version": "1.0.0",
+  "manifest_written_utc": "2026-10-16T18:49:47+00:00",
+  "proposals_authored_utc": "2026-10-17T00:00:41+00:00",
+  "generator": {
+    "builder": "analysis/stage-d1-20261017-000041/build_workspace.py (stdlib only, deterministic)",
+    "validator": "analysis/stage-d1-20261017-000041/validate_stage_d1.py (stdlib + subprocess pytest)",
+    "model_or_api_calls": "NONE - no LLM/API evaluation call was made in Stage D1"
+  },
+  "source_inputs_read_only": [
+    {
+      "path": "analysis/stage-d-20261016-213744/human_review_queue.json",
+      "sha256": "cce025ccac270fd85a192ac680f8ac6a4d612bc01ec71ccb9cc273c44898e769",
+      "bytes": 325534
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/human_review_queue.csv",
+      "sha256": "14ded2ef77c809afbdc3a06c658e6707683f5a33649366a52f8ef501004bc293",
+      "bytes": 266802
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/human_review_queue_blind.csv",
+      "sha256": "6ca7f6adb9b9e9f99297d3ca47a441c201bbc84945a243bc5f8687515af8c3df",
+      "bytes": 230675
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/stage_d_manifest.json",
+      "sha256": "63fcf46ad7ebe88bbc1529be00aac47a883e72981551405d771faa2424389848",
+      "bytes": 4648
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/annotation_schema.json",
+      "sha256": "f82a016c41188ee0f96c67297874cef92cf746ffb5b80c223509fe3bb89040d6",
+      "bytes": 14721
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/human_annotation_guidelines.md",
+      "sha256": "7ec6008d2d863e0f1654845129125a10624c4cb88cda314466c62d965162bde1",
+      "bytes": 10734
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/annotation_data_dictionary.md",
+      "sha256": "a70fb67ecd023cd4a4b6f19b31e54b3e3e352c7345d29dbf91e1671aeb9f2b63",
+      "bytes": 10493
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/stage_d_protocol.md",
+      "sha256": "4bea46f05783f016c3d4d1b87203dea79f1ebf13f04fa1c608bc8ed808dda702",
+      "bytes": 10558
+    },
+    {
+      "path": "analysis/stage-d-20261016-213744/stage_d_provenance_audit.md",
+      "sha256": "60651e66422b04d16f654685a67a4bd4dd4b9af6aaf21a98f73708f2eb43479a",
+      "bytes": 9738
+    },
+    {
+      "path": "analysis/stage-c-20261016/integrity_hashes_after.json",
+      "sha256": "e92381cb366cefc2b55bb313737d8bbfb1cc3aad357ceac5c71a713b4d42ba29",
+      "bytes": 1878
+    },
+    {
+      "path": "data/sample/eval_questions.json",
+      "sha256": "500ed32d5546683392616685f024d9f5feebefec19806c53e1f03a34b33f3a3a",
+      "bytes": 9082
+    },
+    {
+      "path": "runs/eval-postgate22-20261016-141416/evidencegraph-eval.db",
+      "sha256": "ed3c4f0d2ee713dd784fefac6378daa015091ce3890d9317265d41c763863d59",
+      "bytes": 106496
+    }
+  ],
+  "outputs": [
+    {
+      "path": "analysis/stage-d1-20261017-000041/build_workspace.py",
+      "sha256": "da80544155d249ac308dc97edf4f423fd10dd404456ab3adb017d72e132322d2",
+      "bytes": 13859
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/d1_proposed_judgments.json",
+      "sha256": "32fdc9a373d76ccc78cbbb8af945dd5303822127b767d827842b91d53cba709a",
+      "bytes": 62822
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/proposed_judgments.csv",
+      "sha256": "8a0f115571aa12a99d16a2fbdbfe83c81bd4d5deabf8db111c33ed5268d72753",
+      "bytes": 45994
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/review_confirmation_sheet.md",
+      "sha256": "c050774b60c40ccb24dc7b3a1390c8af80c85e8214d4020f561fd18f4ba9528b",
+      "bytes": 12624
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/review_progress.md",
+      "sha256": "44cce7e697a16b2f5a6d8cd5a0c8890a836e4dc60ce3aa29aff2a2a87fb34052",
+      "bytes": 9117
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/review_workspace.csv",
+      "sha256": "063f516214685d6c5223055e8e39f428deb5280349b85faa519a4a23c71851a6",
+      "bytes": 253715
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/stage_d1_validation_report.md",
+      "sha256": "f67aead4c3c80c50745582bc979bfff5483748e83c958f3090c64f6557ccf85f",
+      "bytes": 3646
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/unresolved_evidence.md",
+      "sha256": "e1275e8a5d6f27a56830a8d7e3e0f90c6351f1ffcc2c60d6ae15b2066f7e53c9",
+      "bytes": 10695
+    },
+    {
+      "path": "analysis/stage-d1-20261017-000041/validate_stage_d1.py",
+      "sha256": "1598af260eca653caadc45cbe44b36df4a7035acbc68769ad65e0400ffa235b5",
+      "bytes": 23576
+    }
+  ],
+  "counts": {
+    "items": 46,
+    "claim_items": 40,
+    "abstention_items": 6,
+    "proposal_status": {
+      "proposed_unconfirmed": 45,
+      "needs_adjudication": 1
+    },
+    "human_confirmed": 0,
+    "proposed_labels_claims": {
+      "supported": 20,
+      "insufficient_evidence": 11,
+      "unverifiable": 8,
+      "contradicted": 1
+    },
+    "abstention_assessments": {
+      "appropriate_abstention": 5,
+      "uncertain": 1
+    },
+    "items_with_policy_alternative": 19,
+    "guideline_1A_family": 12,
+    "items_with_flag_notes": 44
+  },
+  "validation": {
+    "checks": "19/19 PASS",
+    "report": "analysis/stage-d1-20261017-000041/stage_d1_validation_report.md",
+    "test_suite": "763 passed (plain `python -m pytest`)"
+  },
+  "git": {
+    "head": "d4ea26db3e27b9bd002c27d157ac5c773be3b800",
+    "branch": "master",
+    "committed": false,
+    "pushed": false,
+    "untracked_analysis_only": true
+  },
+  "honesty_statements": [
+    "NOT HUMAN-ANNOTATED: every label in this directory is a machine-drafted proposal marked proposed_unconfirmed (one item needs_adjudication). No human has confirmed, revised, or authored any label, rationale, timestamp, or identifier here.",
+    "PROPOSAL/HUMAN SEPARATION: proposals exist only in proposal-prefixed columns; every human and adjudication column in review_workspace.csv is emitted empty and is only ever populated by a real reviewer.",
+    "PROPOSER IDENTITY: proposals were drafted by an AI assistant (OpenCode, MiMo-V2.6-Flash); this is stated in proposed_judgments.csv (proposed_by) and in the proposals JSON. No personal human identity is imitated anywhere in these files.",
+    "VERDICT VISIBILITY: the proposal drafter saw system verdicts in the source queue (visible, acknowledged); drafts were written evidence-first and no rationale cites a verdict as justification; verdict agreement is reported post-hoc and only as a descriptive comparison of two machine artifacts. The confirmer's workspace carries no verdict column.",
+    "CONFIRMATION IS NOT INDEPENDENT LABELING: human confirmation of these proposals must be reported as 'AI-proposed, human-confirmed' and may be upward-biased; a truly independent number requires a second reviewer on the untouched blind Stage D file.",
+    "No system verdict was used as proof of correctness; absence of corpus evidence was never treated as proof that a real-world claim is false.",
+    "IMMUTABILITY: Stage C and Stage D artifacts, both runs' databases and reports, data/evidencegraph.db, data/sample/eval_questions.json, and application code were verified unchanged (16 recorded hashes re-verified; no file outside this directory modified since Stage D1 began).",
+    "No commit, push, deploy, Docker, dependency, prompt, model, or gate change occurred; no new run directory was created; gold_label fields remain untouched."
+  ]
+}

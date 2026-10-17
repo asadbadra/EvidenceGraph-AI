@@ -1,0 +1,376 @@
+[
+  {
+    "question_id": "absent-01",
+    "category": "not_in_corpus",
+    "question": "What is the CVSS base score of CVE-2021-44228?",
+    "stored_answer_new": "Insufficient evidence in the retrieved passages.",
+    "stored_answer_hist": "Insufficient evidence in the retrieved passages.",
+    "answers_identical_across_runs": true,
+    "extraction_replay_claims": 0,
+    "extraction_replay_skipped": [
+      {
+        "text": "Insufficient evidence in the retrieved passages.",
+        "reason": "abstention statement"
+      }
+    ],
+    "reconstructed_retrieval": [
+      {
+        "chunk_id": 1,
+        "score": 4.7224,
+        "text": "Advisory: Apache Log4j2 Remote Code Execution Vulnerability\nCVE: CVE-2021-44228\nVendor: Apache\nProduct: Log4j2 Apache Log4j2 contains a vulnerability where JNDI features do not protect against attacker-controlled JNDI-related endpoints, allowing for remote code execution. Required action: For all affected software assets for which updates exist, the only acceptable remediation actions are: 1) Apply updates; OR 2) remove affected assets from agency networks. Temporary mitigations using one of the measures provided at https://www.cisa.gov/uscert/ed-22-02-apache-log4j-recommended-mitigation-measures are only acceptable until updates are available. CWEs: CWE-20, CWE-400, CWE-502\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+      },
+      {
+        "chunk_id": 4,
+        "score": 2.5357,
+        "text": "otes: This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs. Additional information is available at: https://community.progress.com/s/article/MOVEit-Transfer-Critical-Vulnerability-31May2023.;  https://nvd.nist.gov/vuln/detail/CVE-2023-34362"
+      },
+      {
+        "chunk_id": 6,
+        "score": 1.7417,
+        "text": "Advisory: Microsoft Exchange Server Remote Code Execution Vulnerability\nCVE: CVE-2021-34473\nVendor: Microsoft\nProduct: Exchange Server Microsoft Exchange Server contains an unspecified vulnerability that allows for remote code execution. Required action: Apply updates per vendor instructions. CWEs: CWE-918\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: https://nvd.nist.gov/vuln/detail/CVE-2021-34473"
+      },
+      {
+        "chunk_id": 3,
+        "score": 1.6681,
+        "text": "Advisory: Progress MOVEit Transfer SQL Injection Vulnerability\nCVE: CVE-2023-34362\nVendor: Progress\nProduct: MOVEit Transfer Progress MOVEit Transfer contains a SQL injection vulnerability that could allow an unauthenticated attacker to gain unauthorized access to MOVEit Transfer's database. Depending on the database engine being used (MySQL, Microsoft SQL Server, or Azure SQL), an attacker may be able to infer information about the structure and contents of the database in addition to executing SQL statements that alter or delete database elements. Required action: Apply updates per vendor instructions. CWEs: CWE-89\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs."
+      }
+    ],
+    "gold_claims": [
+      {
+        "text": "The CVSS base score of CVE-2021-44228 is 10.0.",
+        "gold_label": "insufficient_evidence"
+      }
+    ],
+    "gold_terms": [
+      "base",
+      "cve-2021-44228",
+      "cvss",
+      "score"
+    ],
+    "gold_terms_found_in_corpus": [
+      "base",
+      "cve-2021-44228"
+    ],
+    "topical_overlap_note": "gold_terms_found_in_corpus reflects topical subject overlap only (e.g. the CVE id itself, 'endpoints'); it is NOT evidence the answer is present. Answer-bearing value tokens are listed below.",
+    "answer_value_tokens": [
+      "10.0"
+    ],
+    "answer_value_tokens_found": [],
+    "answer_value_tokens_missing": [
+      "10.0"
+    ],
+    "corpus_contains_answer_content": false,
+    "provisional_review_category": "appropriate_abstention_likely",
+    "note": "Provisional review category from deterministic lexical probe only; not a gold label. Human answerability review required (Stage D)."
+  },
+  {
+    "question_id": "absent-02",
+    "category": "not_in_corpus",
+    "question": "How many endpoints were compromised by the MOVEit Transfer exploit?",
+    "stored_answer_new": "Insufficient evidence in the retrieved passages.",
+    "stored_answer_hist": "Insufficient evidence in the retrieved passages.",
+    "answers_identical_across_runs": true,
+    "extraction_replay_claims": 0,
+    "extraction_replay_skipped": [
+      {
+        "text": "Insufficient evidence in the retrieved passages.",
+        "reason": "abstention statement"
+      }
+    ],
+    "reconstructed_retrieval": [
+      {
+        "chunk_id": 3,
+        "score": 4.1075,
+        "text": "Advisory: Progress MOVEit Transfer SQL Injection Vulnerability\nCVE: CVE-2023-34362\nVendor: Progress\nProduct: MOVEit Transfer Progress MOVEit Transfer contains a SQL injection vulnerability that could allow an unauthenticated attacker to gain unauthorized access to MOVEit Transfer's database. Depending on the database engine being used (MySQL, Microsoft SQL Server, or Azure SQL), an attacker may be able to infer information about the structure and contents of the database in addition to executing SQL statements that alter or delete database elements. Required action: Apply updates per vendor instructions. CWEs: CWE-89\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs."
+      },
+      {
+        "chunk_id": 4,
+        "score": 3.0461,
+        "text": "otes: This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs. Additional information is available at: https://community.progress.com/s/article/MOVEit-Transfer-Critical-Vulnerability-31May2023.;  https://nvd.nist.gov/vuln/detail/CVE-2023-34362"
+      },
+      {
+        "chunk_id": 1,
+        "score": 1.8307,
+        "text": "Advisory: Apache Log4j2 Remote Code Execution Vulnerability\nCVE: CVE-2021-44228\nVendor: Apache\nProduct: Log4j2 Apache Log4j2 contains a vulnerability where JNDI features do not protect against attacker-controlled JNDI-related endpoints, allowing for remote code execution. Required action: For all affected software assets for which updates exist, the only acceptable remediation actions are: 1) Apply updates; OR 2) remove affected assets from agency networks. Temporary mitigations using one of the measures provided at https://www.cisa.gov/uscert/ed-22-02-apache-log4j-recommended-mitigation-measures are only acceptable until updates are available. CWEs: CWE-20, CWE-400, CWE-502\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+      },
+      {
+        "chunk_id": 2,
+        "score": 0.4876,
+        "text": "Advisory: OpenSSL Information Disclosure Vulnerability\nCVE: CVE-2014-0160\nVendor: OpenSSL\nProduct: OpenSSL The TLS and DTLS implementations in OpenSSL do not properly handle Heartbeat Extension packets, which allows remote attackers to obtain sensitive information. Required action: Apply updates per vendor instructions. CWEs: CWE-125\n Known ransomware campaign use: Unknown (per source record; not independently verified here)\nNotes: https://nvd.nist.gov/vuln/detail/CVE-2014-0160"
+      }
+    ],
+    "gold_claims": [
+      {
+        "text": "The MOVEit Transfer exploit compromised 2500 endpoints.",
+        "gold_label": "insufficient_evidence"
+      }
+    ],
+    "gold_terms": [
+      "2500",
+      "compromised",
+      "endpoints",
+      "exploit",
+      "moveit",
+      "transfer"
+    ],
+    "gold_terms_found_in_corpus": [
+      "endpoints",
+      "moveit",
+      "transfer"
+    ],
+    "topical_overlap_note": "gold_terms_found_in_corpus reflects topical subject overlap only (e.g. the CVE id itself, 'endpoints'); it is NOT evidence the answer is present. Answer-bearing value tokens are listed below.",
+    "answer_value_tokens": [
+      "2500"
+    ],
+    "answer_value_tokens_found": [],
+    "answer_value_tokens_missing": [
+      "2500"
+    ],
+    "corpus_contains_answer_content": false,
+    "provisional_review_category": "appropriate_abstention_likely",
+    "note": "Provisional review category from deterministic lexical probe only; not a gold label. Human answerability review required (Stage D)."
+  },
+  {
+    "question_id": "absent-04",
+    "category": "not_in_corpus",
+    "question": "What patch KB article number did Microsoft publish for CVE-2021-34473?",
+    "stored_answer_new": "Insufficient evidence in the retrieved passages.",
+    "stored_answer_hist": "Insufficient evidence in the retrieved passages.",
+    "answers_identical_across_runs": true,
+    "extraction_replay_claims": 0,
+    "extraction_replay_skipped": [
+      {
+        "text": "Insufficient evidence in the retrieved passages.",
+        "reason": "abstention statement"
+      }
+    ],
+    "reconstructed_retrieval": [
+      {
+        "chunk_id": 6,
+        "score": 6.4911,
+        "text": "Advisory: Microsoft Exchange Server Remote Code Execution Vulnerability\nCVE: CVE-2021-34473\nVendor: Microsoft\nProduct: Exchange Server Microsoft Exchange Server contains an unspecified vulnerability that allows for remote code execution. Required action: Apply updates per vendor instructions. CWEs: CWE-918\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: https://nvd.nist.gov/vuln/detail/CVE-2021-34473"
+      },
+      {
+        "chunk_id": 4,
+        "score": 2.5357,
+        "text": "otes: This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs. Additional information is available at: https://community.progress.com/s/article/MOVEit-Transfer-Critical-Vulnerability-31May2023.;  https://nvd.nist.gov/vuln/detail/CVE-2023-34362"
+      },
+      {
+        "chunk_id": 1,
+        "score": 2.0565,
+        "text": "Advisory: Apache Log4j2 Remote Code Execution Vulnerability\nCVE: CVE-2021-44228\nVendor: Apache\nProduct: Log4j2 Apache Log4j2 contains a vulnerability where JNDI features do not protect against attacker-controlled JNDI-related endpoints, allowing for remote code execution. Required action: For all affected software assets for which updates exist, the only acceptable remediation actions are: 1) Apply updates; OR 2) remove affected assets from agency networks. Temporary mitigations using one of the measures provided at https://www.cisa.gov/uscert/ed-22-02-apache-log4j-recommended-mitigation-measures are only acceptable until updates are available. CWEs: CWE-20, CWE-400, CWE-502\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+      },
+      {
+        "chunk_id": 3,
+        "score": 1.3001,
+        "text": "Advisory: Progress MOVEit Transfer SQL Injection Vulnerability\nCVE: CVE-2023-34362\nVendor: Progress\nProduct: MOVEit Transfer Progress MOVEit Transfer contains a SQL injection vulnerability that could allow an unauthenticated attacker to gain unauthorized access to MOVEit Transfer's database. Depending on the database engine being used (MySQL, Microsoft SQL Server, or Azure SQL), an attacker may be able to infer information about the structure and contents of the database in addition to executing SQL statements that alter or delete database elements. Required action: Apply updates per vendor instructions. CWEs: CWE-89\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs."
+      }
+    ],
+    "gold_claims": [
+      {
+        "text": "Microsoft published KB5004236 for CVE-2021-34473.",
+        "gold_label": "insufficient_evidence"
+      }
+    ],
+    "gold_terms": [
+      "cve-2021-34473",
+      "kb5004236",
+      "microsoft",
+      "published"
+    ],
+    "gold_terms_found_in_corpus": [
+      "cve-2021-34473",
+      "microsoft"
+    ],
+    "topical_overlap_note": "gold_terms_found_in_corpus reflects topical subject overlap only (e.g. the CVE id itself, 'endpoints'); it is NOT evidence the answer is present. Answer-bearing value tokens are listed below.",
+    "answer_value_tokens": [
+      "kb5004236"
+    ],
+    "answer_value_tokens_found": [],
+    "answer_value_tokens_missing": [
+      "kb5004236"
+    ],
+    "corpus_contains_answer_content": false,
+    "provisional_review_category": "appropriate_abstention_likely",
+    "note": "Provisional review category from deterministic lexical probe only; not a gold label. Human answerability review required (Stage D)."
+  },
+  {
+    "question_id": "opinion-02",
+    "category": "non_factual",
+    "question": "Should organizations prioritize MOVEit remediation over Log4j remediation?",
+    "stored_answer_new": "Insufficient evidence in the retrieved passages.",
+    "stored_answer_hist": "Insufficient evidence in the retrieved passages.",
+    "answers_identical_across_runs": true,
+    "extraction_replay_claims": 0,
+    "extraction_replay_skipped": [
+      {
+        "text": "Insufficient evidence in the retrieved passages.",
+        "reason": "abstention statement"
+      }
+    ],
+    "reconstructed_retrieval": [
+      {
+        "chunk_id": 1,
+        "score": 3.8391,
+        "text": "Advisory: Apache Log4j2 Remote Code Execution Vulnerability\nCVE: CVE-2021-44228\nVendor: Apache\nProduct: Log4j2 Apache Log4j2 contains a vulnerability where JNDI features do not protect against attacker-controlled JNDI-related endpoints, allowing for remote code execution. Required action: For all affected software assets for which updates exist, the only acceptable remediation actions are: 1) Apply updates; OR 2) remove affected assets from agency networks. Temporary mitigations using one of the measures provided at https://www.cisa.gov/uscert/ed-22-02-apache-log4j-recommended-mitigation-measures are only acceptable until updates are available. CWEs: CWE-20, CWE-400, CWE-502\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+      },
+      {
+        "chunk_id": 3,
+        "score": 1.6909,
+        "text": "Advisory: Progress MOVEit Transfer SQL Injection Vulnerability\nCVE: CVE-2023-34362\nVendor: Progress\nProduct: MOVEit Transfer Progress MOVEit Transfer contains a SQL injection vulnerability that could allow an unauthenticated attacker to gain unauthorized access to MOVEit Transfer's database. Depending on the database engine being used (MySQL, Microsoft SQL Server, or Azure SQL), an attacker may be able to infer information about the structure and contents of the database in addition to executing SQL statements that alter or delete database elements. Required action: Apply updates per vendor instructions. CWEs: CWE-89\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs."
+      },
+      {
+        "chunk_id": 4,
+        "score": 1.254,
+        "text": "otes: This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs. Additional information is available at: https://community.progress.com/s/article/MOVEit-Transfer-Critical-Vulnerability-31May2023.;  https://nvd.nist.gov/vuln/detail/CVE-2023-34362"
+      }
+    ],
+    "gold_claims": [
+      {
+        "text": "Organizations should prioritize MOVEit remediation over Log4j remediation.",
+        "gold_label": "unverifiable"
+      }
+    ],
+    "gold_terms": [
+      "log4j",
+      "moveit",
+      "organizations",
+      "over",
+      "prioritize",
+      "remediation",
+      "should"
+    ],
+    "gold_terms_found_in_corpus": [
+      "log4j",
+      "moveit",
+      "remediation"
+    ],
+    "topical_overlap_note": "gold_terms_found_in_corpus reflects topical subject overlap only (e.g. the CVE id itself, 'endpoints'); it is NOT evidence the answer is present. Answer-bearing value tokens are listed below.",
+    "answer_value_tokens": [],
+    "answer_value_tokens_found": [],
+    "answer_value_tokens_missing": [],
+    "corpus_contains_answer_content": false,
+    "provisional_review_category": "appropriate_abstention_likely_opinion_question",
+    "note": "Provisional review category from deterministic lexical probe only; not a gold label. Human answerability review required (Stage D)."
+  },
+  {
+    "question_id": "plausible-02",
+    "category": "plausible_but_absent",
+    "question": "Did OpenSSL release a 1.0.2g hotfix for the Heartbleed issue?",
+    "stored_answer_new": "Insufficient evidence in the retrieved passages.",
+    "stored_answer_hist": "Insufficient evidence in the retrieved passages.",
+    "answers_identical_across_runs": true,
+    "extraction_replay_claims": 0,
+    "extraction_replay_skipped": [
+      {
+        "text": "Insufficient evidence in the retrieved passages.",
+        "reason": "abstention statement"
+      }
+    ],
+    "reconstructed_retrieval": [
+      {
+        "chunk_id": 2,
+        "score": 3.4133,
+        "text": "Advisory: OpenSSL Information Disclosure Vulnerability\nCVE: CVE-2014-0160\nVendor: OpenSSL\nProduct: OpenSSL The TLS and DTLS implementations in OpenSSL do not properly handle Heartbeat Extension packets, which allows remote attackers to obtain sensitive information. Required action: Apply updates per vendor instructions. CWEs: CWE-125\n Known ransomware campaign use: Unknown (per source record; not independently verified here)\nNotes: https://nvd.nist.gov/vuln/detail/CVE-2014-0160"
+      },
+      {
+        "chunk_id": 1,
+        "score": 2.8593,
+        "text": "Advisory: Apache Log4j2 Remote Code Execution Vulnerability\nCVE: CVE-2021-44228\nVendor: Apache\nProduct: Log4j2 Apache Log4j2 contains a vulnerability where JNDI features do not protect against attacker-controlled JNDI-related endpoints, allowing for remote code execution. Required action: For all affected software assets for which updates exist, the only acceptable remediation actions are: 1) Apply updates; OR 2) remove affected assets from agency networks. Temporary mitigations using one of the measures provided at https://www.cisa.gov/uscert/ed-22-02-apache-log4j-recommended-mitigation-measures are only acceptable until updates are available. CWEs: CWE-20, CWE-400, CWE-502\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+      },
+      {
+        "chunk_id": 3,
+        "score": 1.6235,
+        "text": "Advisory: Progress MOVEit Transfer SQL Injection Vulnerability\nCVE: CVE-2023-34362\nVendor: Progress\nProduct: MOVEit Transfer Progress MOVEit Transfer contains a SQL injection vulnerability that could allow an unauthenticated attacker to gain unauthorized access to MOVEit Transfer's database. Depending on the database engine being used (MySQL, Microsoft SQL Server, or Azure SQL), an attacker may be able to infer information about the structure and contents of the database in addition to executing SQL statements that alter or delete database elements. Required action: Apply updates per vendor instructions. CWEs: CWE-89\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs."
+      },
+      {
+        "chunk_id": 4,
+        "score": 1.6144,
+        "text": "otes: This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs. Additional information is available at: https://community.progress.com/s/article/MOVEit-Transfer-Critical-Vulnerability-31May2023.;  https://nvd.nist.gov/vuln/detail/CVE-2023-34362"
+      }
+    ],
+    "gold_claims": [
+      {
+        "text": "OpenSSL released a 1.0.2g hotfix for CVE-2014-0160.",
+        "gold_label": "insufficient_evidence"
+      }
+    ],
+    "gold_terms": [
+      "cve-2014-0160",
+      "hotfix",
+      "openssl",
+      "released"
+    ],
+    "gold_terms_found_in_corpus": [
+      "cve-2014-0160",
+      "openssl"
+    ],
+    "topical_overlap_note": "gold_terms_found_in_corpus reflects topical subject overlap only (e.g. the CVE id itself, 'endpoints'); it is NOT evidence the answer is present. Answer-bearing value tokens are listed below.",
+    "answer_value_tokens": [
+      "1.0"
+    ],
+    "answer_value_tokens_found": [],
+    "answer_value_tokens_missing": [
+      "1.0"
+    ],
+    "corpus_contains_answer_content": false,
+    "provisional_review_category": "appropriate_abstention_likely",
+    "note": "Provisional review category from deterministic lexical probe only; not a gold label. Human answerability review required (Stage D)."
+  },
+  {
+    "question_id": "plausible-04",
+    "category": "plausible_but_absent",
+    "question": "Is CVE-2021-45046 present in this catalog?",
+    "stored_answer_new": "Insufficient evidence in the retrieved passages.",
+    "stored_answer_hist": "Insufficient evidence in the retrieved passages.",
+    "answers_identical_across_runs": true,
+    "extraction_replay_claims": 0,
+    "extraction_replay_skipped": [
+      {
+        "text": "Insufficient evidence in the retrieved passages.",
+        "reason": "abstention statement"
+      }
+    ],
+    "reconstructed_retrieval": [
+      {
+        "chunk_id": 4,
+        "score": 3.2515,
+        "text": "otes: This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs. Additional information is available at: https://community.progress.com/s/article/MOVEit-Transfer-Critical-Vulnerability-31May2023.;  https://nvd.nist.gov/vuln/detail/CVE-2023-34362"
+      },
+      {
+        "chunk_id": 3,
+        "score": 1.7758,
+        "text": "Advisory: Progress MOVEit Transfer SQL Injection Vulnerability\nCVE: CVE-2023-34362\nVendor: Progress\nProduct: MOVEit Transfer Progress MOVEit Transfer contains a SQL injection vulnerability that could allow an unauthenticated attacker to gain unauthorized access to MOVEit Transfer's database. Depending on the database engine being used (MySQL, Microsoft SQL Server, or Azure SQL), an attacker may be able to infer information about the structure and contents of the database in addition to executing SQL statements that alter or delete database elements. Required action: Apply updates per vendor instructions. CWEs: CWE-89\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: This CVE has a CISA AA located here: https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-158a. Please see the AA for associated IOCs."
+      },
+      {
+        "chunk_id": 6,
+        "score": 1.7417,
+        "text": "Advisory: Microsoft Exchange Server Remote Code Execution Vulnerability\nCVE: CVE-2021-34473\nVendor: Microsoft\nProduct: Exchange Server Microsoft Exchange Server contains an unspecified vulnerability that allows for remote code execution. Required action: Apply updates per vendor instructions. CWEs: CWE-918\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: https://nvd.nist.gov/vuln/detail/CVE-2021-34473"
+      },
+      {
+        "chunk_id": 1,
+        "score": 1.395,
+        "text": "Advisory: Apache Log4j2 Remote Code Execution Vulnerability\nCVE: CVE-2021-44228\nVendor: Apache\nProduct: Log4j2 Apache Log4j2 contains a vulnerability where JNDI features do not protect against attacker-controlled JNDI-related endpoints, allowing for remote code execution. Required action: For all affected software assets for which updates exist, the only acceptable remediation actions are: 1) Apply updates; OR 2) remove affected assets from agency networks. Temporary mitigations using one of the measures provided at https://www.cisa.gov/uscert/ed-22-02-apache-log4j-recommended-mitigation-measures are only acceptable until updates are available. CWEs: CWE-20, CWE-400, CWE-502\n Known ransomware campaign use: Known (per source record; not independently verified here)\nNotes: https://nvd.nist.gov/vuln/detail/CVE-2021-44228"
+      }
+    ],
+    "gold_claims": [
+      {
+        "text": "CVE-2021-45046 is present in the catalog.",
+        "gold_label": "contradicted"
+      }
+    ],
+    "gold_terms": [
+      "catalog",
+      "cve-2021-45046",
+      "present"
+    ],
+    "gold_terms_found_in_corpus": [],
+    "topical_overlap_note": "gold_terms_found_in_corpus reflects topical subject overlap only (e.g. the CVE id itself, 'endpoints'); it is NOT evidence the answer is present. Answer-bearing value tokens are listed below.",
+    "answer_value_tokens": [],
+    "answer_value_tokens_found": [],
+    "answer_value_tokens_missing": [],
+    "corpus_contains_answer_content": false,
+    "provisional_review_category": "appropriate_abstention_but_gold_expects_contradicted_review_priority",
+    "note": "Provisional review category from deterministic lexical probe only; not a gold label. Human answerability review required (Stage D)."
+  }
+]
